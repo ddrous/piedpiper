@@ -1,2 +1,2 @@
-data/*
+data/voxceleb/*
 !data/voxceleb/README.md
