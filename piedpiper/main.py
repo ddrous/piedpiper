@@ -1,7 +1,8 @@
 #%%
-from selfmod import CelebADataset, make_image, NumpyLoader
+from selfmod import CelebADataset, NumpyLoader, make_image
 # from selfmod import *
 import jax
+jax.config.update("jax_debug_nans", True)
 import jax.numpy as jnp
 import equinox as eqx
 import optax
@@ -11,22 +12,25 @@ import numpy as np
 
 
 ## For reproducibility
-seed = 2024
+seed = 2022
 
 ## Dataloader hps
 k_shots = 100
 resolution = (32, 32)
 data_folder="../../Self-Mod/examples/celeb-a/data/"
+# data_folder="/Users/ddrous/Projects/Self-Mod/examples/celeb-a/data/"
 shuffle = False
-num_workers = 24
+num_workers = 0
+latent_chans = 32
 
-envs_batch_size = 12
-envs_batch_size_val = 12
+envs_batch_size = 1
+envs_batch_size_val = 1
 
-init_lr = 1e-4
-nb_epochs = 500
-print_every = 10
-sched_factor = 0.5
+init_lr = 1e-5
+nb_epochs = 1000
+print_every = 100
+sched_factor = 0.1
+eps = 1e-5  ## Small value to avoid division by zero
 
 H, W, C = (*resolution, 3)
 
@@ -45,7 +49,7 @@ train_dataset = CelebADataset(data_folder,
                             resolution=resolution,
                             # seed=seed
                             )
-train_dataset.total_envs = envs_batch_size*10   ## 10 batches wanted
+train_dataset.total_envs = envs_batch_size*1   ## 10 batches wanted
 train_dataloader = NumpyLoader(train_dataset, 
                               batch_size=envs_batch_size, 
                               shuffle=shuffle,
@@ -59,30 +63,27 @@ all_shots_train_dataset = CelebADataset(data_folder,
                                     resolution=resolution,
                                     # seed=seed,
                                     )
-all_shots_train_dataset.total_envs = envs_batch_size_val*10   ## 10 batches wanted
+all_shots_train_dataset.total_envs = envs_batch_size_val*1   ## 10 batches wanted
 all_shots_train_dataloader = NumpyLoader(all_shots_train_dataset, 
                               batch_size=envs_batch_size_val, 
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
-dat = next(iter(all_shots_train_dataloader))
-dat[0].shape, dat[1].shape
-
-dat_few_shots = next(iter(train_dataloader))
-
-## Collect a few xy coodrinate pairs, rgb pxiels tripales, and make a imnage to show
 
 #%% 
-fig, axs = plt.subplots(1, 2, figsize=(8, 4))
-img = make_image(dat[0][0], dat[1][0], img_size=(*resolution, 3))
-axs[0].imshow(img)
+# dat = next(iter(all_shots_train_dataloader))
+# dat_few_shots = next(iter(train_dataloader))
 
-img_fs = make_image(dat_few_shots[0][0], dat_few_shots[1][0], img_size=(*resolution, 3))
-axs[1].imshow(img_fs)
+# fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+# img = make_image(dat[0][0], dat[1][0], img_size=(*resolution, 3))
+# axs[0].imshow(img)
+
+# img_fs = make_image(dat_few_shots[0][0], dat_few_shots[1][0], img_size=(*resolution, 3))
+# axs[1].imshow(img_fs)
+
 
 #%%
-
 
 class ConvCNP(eqx.Module):
     encoder: eqx.Module
@@ -95,7 +96,8 @@ class ConvCNP(eqx.Module):
         keys = jax.random.split(key, 2)
         self.encoder = Encoder(key=keys[0])    ## E
         self.decoder = Decoder(latent_chans, key=keys[1])    ## rho
-        self.positivity = lambda x: jax.nn.softplus(x)
+        # self.positivity = lambda x: jax.nn.softplus(x)
+        self.positivity = lambda x: jnp.clip(jax.nn.softplus(x), eps, 1)
 
     def preprocess(self, X, Y):
         img = jnp.zeros((C, H, W))
@@ -138,9 +140,10 @@ class Encoder(eqx.Module):
 
     def __call__(self, Mc, Ic):
         h0 = self.conv1(Mc)
+        # h0 = jnp.clip(h0, eps, None)
         # jax.debug.print("Ho is {}", h0)
         Zc = Mc * Ic
-        h = self.conv2(Zc) / h0     ## nan to nums ?
+        h = self.conv2(Zc) / (h0)     ## nan to nums ?
         return jnp.concatenate([h0, h], axis=0)
 
 class Decoder(eqx.Module):
@@ -151,18 +154,19 @@ class Decoder(eqx.Module):
     def __init__(self, latent_chans, key):
         super().__init__()
         keys = jax.random.split(key, 3)
-        self.conv1 = eqx.nn.Conv2d(C, latent_chans, 4, padding="same", key=keys[0])
-        self.conv2 = eqx.nn.Conv2d(latent_chans, latent_chans, 4, padding="same", key=keys[1])
+        self.conv1 = eqx.nn.Conv2d(C, latent_chans, 3, padding="same", key=keys[0])
+        self.conv2 = eqx.nn.Conv2d(latent_chans, latent_chans, 3, padding="same", key=keys[1])
         self.mlp = eqx.nn.Conv2d(latent_chans, 2*C, 1, padding="same", key=keys[2])
 
     def __call__(self, hc):
         h = self.conv1(hc)
         h = self.conv2(h)
+        # jax.debug.print("H is {}", h)
         ft = self.mlp(h)
         return ft
 
 
-model = ConvCNP(latent_chans=8, key=model_key)
+model = ConvCNP(latent_chans=latent_chans, key=model_key)
 
 def loss_fn(model, batch):
     (Xc, Yc), (_, Yt) = batch
@@ -177,11 +181,12 @@ def loss_fn(model, batch):
     def neg_log_likelihood(mu, sigma, y):
         # mu, sigma, y shape: (1)
         # return jnp.log(sigma) + 0.5 * ((y - mu) / sigma) ** 2
+        # return 0.5 * ((y - mu)) ** 2
         return 0.5 * jnp.log(2*jnp.pi*sigma) + 0.5 * ((y - mu) / sigma) ** 2
 
     losses = neg_log_likelihood(mus, sigmas, Yt)
-
-    return jnp.mean(losses)
+    # return losses.sum(axis=(1, 2)).mean()
+    return losses.mean()
 
 ## Define optimiser and train the model
 total_steps = nb_epochs*train_dataloader.num_batches
@@ -220,7 +225,7 @@ for epoch in range(nb_epochs):
     losses.append(loss_epoch)
 
     if epoch % print_every == 0 or epoch == nb_epochs-1:
-        print(f"{time.strftime("%H:%M:%S")}      Epoch: {epoch:-3d}      Loss: {losses[-1]:-.8f}      Time/Epoch(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\n")
+        print(f"{time.strftime('%H:%M:%S')}      Epoch: {epoch:-3d}      Loss: {losses[-1]:-.8f}      Time/Epoch(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\n")
 
 
 #%%
@@ -234,14 +239,17 @@ ax.set_yscale("log")
 ax.set_title("Loss curve")
 
 
-fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 6))
+#%%
+fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(12, 6))
 
 # Visualize an examploe prediction from the latest batch
 Xc, Yc = ctx_batch
 Xt, Yt = tgt_batch
 mus, sigmas = model(Xc, Yc)
-# test_key = jax.random.PRNGKey(time.time_ns())
-Yt_hat = jax.random.normal(test_key, mus.shape) * sigmas + mus
+test_key = jax.random.PRNGKey(time.time_ns())
+# Yt_hat = jax.random.normal(test_key, mus.shape) * sigmas + mus
+Yt_hat = mus
+print("Yt_hat shape: ", sigmas)
 
 plt_idx = jax.random.randint(test_key, (1,), 0, envs_batch_size_val)[0]
 img_true = make_image(Xt[plt_idx], Yt[plt_idx], img_size=(*resolution, 3))
@@ -255,3 +263,7 @@ ax2.set_title(f"Context Set")
 img_pred = make_image(Xt[plt_idx], Yt_hat[plt_idx], img_size=(*resolution, 3))
 ax3.imshow(img_pred)
 ax3.set_title(f"Prediction")
+
+img_std = make_image(Xt[plt_idx], sigmas[plt_idx], img_size=(*resolution, 3))
+ax4.imshow(img_std)
+ax4.set_title(f"Uncertainty")
