@@ -1,6 +1,7 @@
 #%%
-from selfmod import CelebADataset, NumpyLoader, make_image
+from selfmod import CelebADataset, NumpyLoader, make_image, VNet
 # from selfmod import *
+# from archs import VNet
 import jax
 jax.config.update("jax_debug_nans", True)
 import jax.numpy as jnp
@@ -12,27 +13,29 @@ import numpy as np
 
 
 ## For reproducibility
-seed = 2022
+seed = 2028
 
 ## Dataloader hps
 k_shots = 100
 resolution = (32, 32)
+H, W, C = (*resolution, 3)
+
 data_folder="../../Self-Mod/examples/celeb-a/data/"
 # data_folder="/Users/ddrous/Projects/Self-Mod/examples/celeb-a/data/"
 shuffle = False
 num_workers = 0
-latent_chans = 32
+latent_chans = 16
 
 envs_batch_size = 1
-envs_batch_size_val = 1
+envs_batch_size_all = envs_batch_size
+num_batches = 8*4
 
-init_lr = 1e-5
-nb_epochs = 1000
+init_lr = 5e-4
+nb_epochs = 2000
 print_every = 100
-sched_factor = 0.1
-eps = 1e-5  ## Small value to avoid division by zero
+sched_factor = 1.0
+eps = 1e-6  ## Small value to avoid division by zero
 
-H, W, C = (*resolution, 3)
 
 # os.listdir(data_folder)
 
@@ -49,7 +52,7 @@ train_dataset = CelebADataset(data_folder,
                             resolution=resolution,
                             # seed=seed
                             )
-train_dataset.total_envs = envs_batch_size*1   ## 10 batches wanted
+train_dataset.total_envs = envs_batch_size*num_batches
 train_dataloader = NumpyLoader(train_dataset, 
                               batch_size=envs_batch_size, 
                               shuffle=shuffle,
@@ -63,9 +66,9 @@ all_shots_train_dataset = CelebADataset(data_folder,
                                     resolution=resolution,
                                     # seed=seed,
                                     )
-all_shots_train_dataset.total_envs = envs_batch_size_val*1   ## 10 batches wanted
+all_shots_train_dataset.total_envs = envs_batch_size_all*num_batches
 all_shots_train_dataloader = NumpyLoader(all_shots_train_dataset, 
-                              batch_size=envs_batch_size_val, 
+                              batch_size=envs_batch_size_all, 
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
@@ -84,6 +87,69 @@ all_shots_train_dataloader = NumpyLoader(all_shots_train_dataset,
 
 
 #%%
+
+
+class Encoder(eqx.Module):
+    conv1: eqx.nn.Conv2d
+    conv2: eqx.nn.Conv2d
+
+    def __init__(self, key):
+        super().__init__()
+        keys = jax.random.split(key, 2)
+        self.conv1 = eqx.nn.Conv2d(1, 1, 3, padding="same", key=keys[0])
+        self.conv2 = eqx.nn.Conv2d(C, C-1, 3, padding="same", key=keys[1])
+
+    def __call__(self, Mc, Ic):
+        h0 = self.conv1(Mc)
+        # h0 = jnp.clip(h0, eps, None)
+        # jax.debug.print("Ho is {}", h0)
+        Zc = Mc * Ic
+        h = self.conv2(Zc) / (h0)     ## nan to nums ?
+        return jnp.concatenate([h0, h], axis=0)
+
+class Decoder(eqx.Module):
+    # conv1: eqx.nn.Conv2d
+    # conv2: eqx.nn.Conv2d
+    # conv3: eqx.nn.Conv2d
+
+    vnet: eqx.Module
+    mlp: eqx.nn.Conv2d
+
+    def __init__(self, latent_chans, key):
+        super().__init__()
+        keys = jax.random.split(key, 4)
+        # self.conv1 = eqx.nn.Conv2d(C, latent_chans, 3, padding="same", key=keys[0])
+        # self.conv2 = eqx.nn.Conv2d(latent_chans, latent_chans, 3, padding="same", key=keys[1])
+        # self.conv3 = eqx.nn.Conv2d(latent_chans, latent_chans, 3, padding="same", key=keys[3])
+
+
+        self.vnet = VNet(input_shape=(C, H, W), 
+                         output_shape=(latent_chans, H, W), 
+                         levels=4, 
+                         depth=32,
+                         kernel_size=5,
+                         activation=jax.nn.relu,
+                         final_activation=lambda x:x,
+                         batch_norm=False,
+                         dropout_rate=0.,
+                         key=keys[0],)
+
+        self.mlp = eqx.nn.Conv2d(latent_chans, 2*C, 1, padding="same", key=keys[2])
+
+    def __call__(self, hc):
+        # h = self.conv1(hc)
+        # h = jax.nn.relu(h)
+        # h = self.conv2(h)
+        # h = jax.nn.relu(h)
+        # h = self.conv3(h)
+
+        h = self.vnet(hc)
+
+        # jax.debug.print("H is {}", h)
+        ft = self.mlp(h)
+        return ft
+
+
 
 class ConvCNP(eqx.Module):
     encoder: eqx.Module
@@ -109,8 +175,10 @@ class ConvCNP(eqx.Module):
         return img, mask
 
     def postprocess(self, mu, sigma):
-        mu = jnp.transpose(mu, (1, 2, 0)).reshape(-1, C)
-        sigma = jnp.transpose(sigma, (1, 2, 0)).reshape(-1, C)
+        # mu = jnp.transpose(mu, (1, 2, 0)).reshape(-1, C)
+        # sigma = jnp.transpose(sigma, (1, 2, 0)).reshape(-1, C)
+        mu = jnp.transpose(mu, (1, 2, 0))
+        sigma = jnp.transpose(sigma, (1, 2, 0))
         return mu, sigma
 
     def __call__(self, Xs, Ys):
@@ -119,72 +187,42 @@ class ConvCNP(eqx.Module):
             hc = self.encoder(Mc, Ic)   ## Normalized convolution
 
             ft = self.decoder(hc)
-            mu, sigma = jnp.split(ft, 2, axis=-1)
+            mu, sigma = jnp.split(ft, 2, axis=0)
             # jax.debug.print("sigma is {}", sigma)
             sigma = self.positivity(sigma)
 
-            mu, sigma = self.postprocess(mu, sigma)  ## Reshape into 2D arrays = (H*W, C)
-            return mu, sigma
+            mu, sigma = self.postprocess(mu, sigma)  ## Reshape into 2D arrays = (H, W, C)
+
+            return mu, sigma    ## Shape: (H, W, C)
 
         return eqx.filter_vmap(predict)(Xs, Ys)
-    
-class Encoder(eqx.Module):
-    conv1: eqx.nn.Conv2d
-    conv2: eqx.nn.Conv2d
-
-    def __init__(self, key):
-        super().__init__()
-        keys = jax.random.split(key, 2)
-        self.conv1 = eqx.nn.Conv2d(1, 1, 4, padding="same", key=keys[0])
-        self.conv2 = eqx.nn.Conv2d(C, C-1, 4, padding="same", key=keys[1])
-
-    def __call__(self, Mc, Ic):
-        h0 = self.conv1(Mc)
-        # h0 = jnp.clip(h0, eps, None)
-        # jax.debug.print("Ho is {}", h0)
-        Zc = Mc * Ic
-        h = self.conv2(Zc) / (h0)     ## nan to nums ?
-        return jnp.concatenate([h0, h], axis=0)
-
-class Decoder(eqx.Module):
-    conv1: eqx.nn.Conv2d
-    conv2: eqx.nn.Conv2d
-    mlp: eqx.nn.Conv2d
-
-    def __init__(self, latent_chans, key):
-        super().__init__()
-        keys = jax.random.split(key, 3)
-        self.conv1 = eqx.nn.Conv2d(C, latent_chans, 3, padding="same", key=keys[0])
-        self.conv2 = eqx.nn.Conv2d(latent_chans, latent_chans, 3, padding="same", key=keys[1])
-        self.mlp = eqx.nn.Conv2d(latent_chans, 2*C, 1, padding="same", key=keys[2])
-
-    def __call__(self, hc):
-        h = self.conv1(hc)
-        h = self.conv2(h)
-        # jax.debug.print("H is {}", h)
-        ft = self.mlp(h)
-        return ft
-
 
 model = ConvCNP(latent_chans=latent_chans, key=model_key)
 
 def loss_fn(model, batch):
-    (Xc, Yc), (_, Yt) = batch
+    (Xc, Yc), (Xt, Yt) = batch
     # Xc shape: (B, K, 2), Yc shape: (B, K, C), Yt shape: (B, 1024, C)
 
-    mus, sigmas = model(Xc, Yc)
-    # mu, sigma shape: (B, 1024, C)
+    @eqx.filter_vmap
+    def make_targets(X, Y):
+        I, _ = model.preprocess(X, Y)
+        return I.transpose(1, 2, 0)
+    ys = make_targets(Xt, Yt)
 
-    @eqx.filter_vmap
-    @eqx.filter_vmap
-    @eqx.filter_vmap
+    mus, sigmas = model(Xc, Yc)
+    # mu, sigma shape: (B, H, W, C)
+
+    # @eqx.filter_vmap
+    # @eqx.filter_vmap
+    # @eqx.filter_vmap
+    # @eqx.filter_vmap
     def neg_log_likelihood(mu, sigma, y):
         # mu, sigma, y shape: (1)
         # return jnp.log(sigma) + 0.5 * ((y - mu) / sigma) ** 2
         # return 0.5 * ((y - mu)) ** 2
         return 0.5 * jnp.log(2*jnp.pi*sigma) + 0.5 * ((y - mu) / sigma) ** 2
 
-    losses = neg_log_likelihood(mus, sigmas, Yt)
+    losses = neg_log_likelihood(mus, sigmas, ys)
     # return losses.sum(axis=(1, 2)).mean()
     return losses.mean()
 
@@ -192,7 +230,7 @@ def loss_fn(model, batch):
 total_steps = nb_epochs*train_dataloader.num_batches
 bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
 sched = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
-opt = optax.chain(optax.clip(5.0), optax.adam(sched))
+opt = optax.chain(optax.clip(1.0), optax.adam(sched))
 
 opt_state = opt.init(eqx.filter(model, eqx.is_array))
 
@@ -229,14 +267,21 @@ for epoch in range(nb_epochs):
 
 
 #%%
+
+### Serialse the model
+eqx.tree_serialise_leaves("model.eqx", model)
+
 ## Plot the loss curve
 fig, ax = plt.subplots(1, 1, figsize=(12, 4))
-ax.plot(losses)
+ax.plot(np.clip(losses, None, 1))
 ax.set_xlabel("Epochs")
 ax.set_ylabel("Negative Log Likelihood")
-ax.set_yscale("log")
+# ax.set_yscale("log")
 # ax.set_ylim(0, 10)
 ax.set_title("Loss curve")
+
+fig.savefig("loss_curve.png")
+
 
 
 #%%
@@ -246,12 +291,15 @@ fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(12, 6))
 Xc, Yc = ctx_batch
 Xt, Yt = tgt_batch
 mus, sigmas = model(Xc, Yc)
+# mus, sigmas = jax.tree_map(lambda x: x.reshape((-1, 1024, C)), (mus, sigmas))
+
 test_key = jax.random.PRNGKey(time.time_ns())
 # Yt_hat = jax.random.normal(test_key, mus.shape) * sigmas + mus
 Yt_hat = mus
-print("Yt_hat shape: ", sigmas)
 
-plt_idx = jax.random.randint(test_key, (1,), 0, envs_batch_size_val)[0]
+plt_idx = jax.random.randint(test_key, (1,), 0, envs_batch_size_all)[0]
+print("Yt_hat shape: ", sigmas[plt_idx])
+
 img_true = make_image(Xt[plt_idx], Yt[plt_idx], img_size=(*resolution, 3))
 ax1.imshow(img_true)
 ax1.set_title(f"Target")
@@ -260,10 +308,16 @@ img_fw = make_image(Xc[plt_idx], Yc[plt_idx], img_size=(*resolution, 3))
 ax2.imshow(img_fw)
 ax2.set_title(f"Context Set")
 
-img_pred = make_image(Xt[plt_idx], Yt_hat[plt_idx], img_size=(*resolution, 3))
+# img_pred = make_image(Xt[plt_idx], Yt_hat[plt_idx], img_size=(*resolution, 3))
+img_pred = mus[plt_idx]
 ax3.imshow(img_pred)
 ax3.set_title(f"Prediction")
 
-img_std = make_image(Xt[plt_idx], sigmas[plt_idx], img_size=(*resolution, 3))
+# img_std = make_image(Xt[plt_idx], sigmas[plt_idx], img_size=(*resolution, 3))
+img_std = sigmas[plt_idx]
+## rescale to 0-1
+# img_std = (img_std - img_std.min()) / (img_std.max() - img_std.min())
 ax4.imshow(img_std)
 ax4.set_title(f"Uncertainty")
+
+fig.savefig("predictions.png")
