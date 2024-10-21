@@ -1,0 +1,110 @@
+
+
+
+
+
+
+class Cell(eqx.Module):
+    encoder: eqx.Module
+    decoder: eqx.Module
+    positivity: callable
+    mem_gate: eqx.nn.Conv2d
+
+    def __init__(self, H, W, C, latent_chans=8, key=None):
+        super().__init__()
+        ## From the ConvCNP paper, Figure 1c
+        keys = jax.random.split(key, 3)
+        self.encoder = Encoder(C, H, W, key=keys[0])    ## E
+        self.decoder = Decoder(C, H, W, in_chans=C, out_chans=latent_chans, key=keys[1])    ## rho
+        # self.positivity = lambda x: jax.nn.softplus(x)
+        self.positivity = lambda x: jnp.clip(jax.nn.softplus(x), eps, 1)
+
+        self.mem_gate = eqx.nn.Conv2d(2*C, C, 3, padding="same", key=keys[2])
+
+    def preprocess(self, X, Y):
+        img = jnp.zeros((C, H, W))
+        mask = jnp.zeros((1, H, W))
+        i_locs = (X[:, 0] * H).astype(int)
+        j_locs = (X[:, 1] * W).astype(int)
+        img = img.at[:, i_locs, j_locs].set(jnp.clip(Y, 0., 1.).T)
+        mask = mask.at[:, i_locs, j_locs].set(1.)
+        return img, mask
+
+    def postprocess(self, mu, sigma):
+        mu = jnp.transpose(mu, (1, 2, 0))
+        sigma = jnp.transpose(sigma, (1, 2, 0))
+        return mu, sigma
+
+    def __call__(self, Inp, Mem):
+        X, Y = Inp
+
+        Ic, Mc = self.preprocess(X, Y)   ## Context pixels and their location
+        hc = self.encoder(Mc, Ic)   ## Normalized convolution
+
+        mem_h = self.mem_gate(jnp.concatenate([hc, Mem], axis=0))      ## TODO The key.
+
+        ft = self.decoder(mem_h)
+        mu, sigma = jnp.split(ft, 2, axis=0)
+        sigma = self.positivity(sigma)
+
+        mu, sigma = self.postprocess(mu, sigma)  ## Reshape into 2D arrays = (H, W, C)
+
+        return (mu, sigma), mem_h.transpose(1, 2, 0)    ## Shape: (H, W, C)
+
+
+
+
+class RConvCNP(eqx.Module):
+    cell: eqx.Module
+    img_utils: tuple
+    num_shots: int
+    bootstrap_mode: bool
+
+    def __init__(self, C, H, W, key=None):
+        super().__init__()
+        ## From the ConvCNP paper, Figure 1c
+        keys = jax.random.split(key, 2)
+        self.cell = Cell(C, H, W, key=keys[0])    ## E
+        self.img_utils = (C, H, W)
+        self.bootstrap_mode = True
+
+    def sample_ctx(self, full_frame, sigma_frame, key):
+        Xc = jnp.random.choice(full_frame, self.num_shots, replace=False, p=sigma_frame)
+        Yc = full_frame[Xc] ## or close
+        return Xc, Yc
+
+    def bootstrap_predict(self, full_vid, key):
+        """ Predict the full video by bootstrapping based on the uncertainties """
+        hidden = jnp.zeros(self.img_utils)
+        sigma_0 = jnp.ones(self.img_utils) / jnp.prod(self.img_utils)
+
+        def f(carry, full_frame):
+            sigma, mem, key = carry
+            new_key, _ = jax.random.split(key) 
+            ctx_frame = self.sample_ctx(full_frame, sigma, new_key)
+            (new_mu, new_sigma), new_mem = self.cell(ctx_frame, mem)
+            return (new_mu, new_sigma, ctx_frame), (new_sigma, new_mem, new_key)
+
+        _, (mus, sigmas, ctx_vid) = jax.lax.scan(f, (sigma_0, hidden, key), full_vid)
+
+        return (mus, sigmas), ctx_vid
+    
+    def naive_predct(self, ctx_vid):
+        """ Predict the full video by only based on predifined context frame pixels. DECOMPRESS """
+        hidden = jnp.zeros(self.img_utils)
+
+        def f(carry, ctx_frame):
+            (new_mu, new_sigma), new_mem = self.cell(ctx_frame, carry)
+            return (new_mu, new_sigma), new_mem
+
+        _, (mus, sigmas) = jax.lax.scan(f, hidden, ctx_vid)
+
+        return (mus, sigmas), ctx_vid
+
+    def __call__(self, vids, key):
+        if self.bootstrap_mode:
+            ## TODO Video frames are assumed to be full (all locataions available and we can sample from) !!!
+            keys = jax.random.split(key, len(vids))
+            return eqx.filter_vmap(self.bootstrap_predict)(vids, keys)
+        else:
+            return eqx.filter_vmap(self.naive_predict)(vids)

@@ -1,2 +1,4 @@
-data/voxceleb/*
-!data/voxceleb/README.md
+examples/voxceleb/data/*
+!examples/voxceleb/data/README.md
+
+examples/celeba/tmp/*
