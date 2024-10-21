@@ -3,7 +3,9 @@ from selfmod import CelebADataset, NumpyLoader, make_image, VNet
 # from selfmod import *
 # from archs import VNet
 import jax
-jax.config.update("jax_debug_nans", True)
+# jax.config.update("jax_debug_nans", True)
+# jax.config.update("jax_enable_x64", True)
+
 import jax.numpy as jnp
 import equinox as eqx
 import optax
@@ -13,10 +15,10 @@ import numpy as np
 
 
 ## For reproducibility
-seed = 2028
+seed = 2022
 
 ## Dataloader hps
-k_shots = 100
+k_shots = 10
 resolution = (32, 32)
 H, W, C = (*resolution, 3)
 
@@ -28,11 +30,11 @@ latent_chans = 16
 
 envs_batch_size = 1
 envs_batch_size_all = envs_batch_size
-num_batches = 8*4
+num_batches = 8*1
 
-init_lr = 5e-4
-nb_epochs = 2000
-print_every = 100
+init_lr = 5e-5
+nb_epochs = 7500
+print_every = 500
 sched_factor = 1.0
 eps = 1e-6  ## Small value to avoid division by zero
 
@@ -75,6 +77,10 @@ all_shots_train_dataloader = NumpyLoader(all_shots_train_dataset,
 
 
 #%% 
+
+gen_train_dataloader = iter(train_dataloader)
+gen_all_shots_train_dataloader = iter(all_shots_train_dataloader)
+
 # dat = next(iter(all_shots_train_dataloader))
 # dat_few_shots = next(iter(train_dataloader))
 
@@ -126,7 +132,7 @@ class Decoder(eqx.Module):
         self.vnet = VNet(input_shape=(C, H, W), 
                          output_shape=(latent_chans, H, W), 
                          levels=4, 
-                         depth=32,
+                         depth=8,
                          kernel_size=5,
                          activation=jax.nn.relu,
                          final_activation=lambda x:x,
@@ -230,7 +236,7 @@ def loss_fn(model, batch):
 total_steps = nb_epochs*train_dataloader.num_batches
 bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
 sched = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
-opt = optax.chain(optax.clip(1.0), optax.adam(sched))
+opt = optax.chain(optax.clip(1e-0), optax.adam(sched))
 
 opt_state = opt.init(eqx.filter(model, eqx.is_array))
 
@@ -288,6 +294,9 @@ fig.savefig("loss_curve.png")
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(12, 6))
 
 # Visualize an examploe prediction from the latest batch
+ctx_batch = next(gen_train_dataloader)
+tgt_batch = next(gen_all_shots_train_dataloader)
+
 Xc, Yc = ctx_batch
 Xt, Yt = tgt_batch
 mus, sigmas = model(Xc, Yc)
@@ -298,7 +307,7 @@ test_key = jax.random.PRNGKey(time.time_ns())
 Yt_hat = mus
 
 plt_idx = jax.random.randint(test_key, (1,), 0, envs_batch_size_all)[0]
-print("Yt_hat shape: ", sigmas[plt_idx])
+# print("Yt_hat shape: ", sigmas[plt_idx])
 
 img_true = make_image(Xt[plt_idx], Yt[plt_idx], img_size=(*resolution, 3))
 ax1.imshow(img_true)
