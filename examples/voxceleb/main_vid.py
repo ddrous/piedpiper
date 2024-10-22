@@ -75,6 +75,8 @@ class RConvCNP(eqx.Module):
 
     def bootstrap_predict(self, full_vid, key):
         """ Predict the full video by bootstrapping based on the uncertainties """
+        assert full_vid.shape[1] = np.prod(self.img_utils)
+
         hidden = jnp.zeros(self.img_utils)
         sigma_0 = jnp.ones(self.img_utils) / jnp.prod(self.img_utils)
 
@@ -91,6 +93,8 @@ class RConvCNP(eqx.Module):
     
     def naive_predct(self, ctx_vid):
         """ Predict the full video by only based on predifined context frame pixels. DECOMPRESS """
+        assert ctx_vid.shape[1] = self.num_shots
+
         hidden = jnp.zeros(self.img_utils)
 
         def f(carry, ctx_frame):

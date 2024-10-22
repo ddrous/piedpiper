@@ -2,7 +2,7 @@ import pickle
 from typing import Any, Tuple
 
 from .dataloader import DataLoader
-from .learner import Learner
+from .learner import *
 from .visualtester import VisualTester
 from ._config import *
 
@@ -13,12 +13,8 @@ from ._config import *
 #%%
 
 class Trainer:
-    def __init__(self, learner:Learner, optimiser, key=None):
+    def __init__(self, learner:Learner, optimiser):
         """ Base class for training the models"""
-
-        if key is None:
-            raise ValueError("You must provide a key for the trainer")
-        self.key = key      ## Default training key
 
         if not isinstance(learner, Learner):
             raise ValueError("The learner must be an instance of Learner")
@@ -36,10 +32,10 @@ class Trainer:
 
         if not ignore_losses:
             if len(self.val_losses) > 0:
-                np.savez(path+"train_histories.npz", train_losses=jnp.vstack(self.train_losses), val_losses=jnp.vstack(self.val_losses))
+                np.savez(path+"train_histories.npz", train_losses=jnp.array(self.train_losses), val_losses=jnp.array(self.val_losses))
             else:
-                np.savez(path+"train_histories.npz", train_losses=jnp.vstack(self.train_losses))
-        pickle.dump(self.opt_state_model, open(path+"opt_state.pkl", "wb"))
+                np.savez(path+"train_histories.npz", train_losses=jnp.array(self.train_losses))
+        pickle.dump(self.opt_state, open(path+"opt_state.pkl", "wb"))
 
         self.learner.save_learner(path)
 
@@ -54,8 +50,8 @@ class Trainer:
             histories = np.load(path+"checkpoints/train_histories.npz")
         else:
             print("WARNING: No training history found at all. Using tens.")
-            histories = {'train_losses': jnp.inf*np.ones((1,1))}
-        self.train_losses = [histories['train_losses']]
+            histories = {'train_losses': jnp.inf*np.ones((1,))}
+        self.train_losses = histories['train_losses']
 
         if os.path.exists(path+"val_losses.npy"):
             self.val_losses = [np.load(path+"val_losses.npy")]
@@ -77,7 +73,7 @@ class Trainer:
     def meta_train(self,
                     dataloader: DataLoader, 
                     nb_epochs,
-                    print_error_every=1, 
+                    print_every=1, 
                     save_checkpoints=False,
                     validate_every=100,
                     save_path=False, 
@@ -85,6 +81,13 @@ class Trainer:
                     val_criterion=None):
         """ Train the model using the provided dataloader """
 
+        opt = self.opt
+        opt_state = self.opt_state
+        model = self.learner.model
+        loss_fn = self.learner.loss_fn
+
+        if save_checkpoints:
+            os.makedirs(save_path+"checkpoints", exist_ok=True)
 
         @eqx.filter_jit
         def train_step(model, batch, opt_state):
@@ -101,8 +104,8 @@ class Trainer:
 
             loss_epoch = 0.
             num_batches = 0
-            for (ctx_batch, tgt_batch) in dataloader:
-                model, loss, opt_state = train_step(model, (ctx_batch, tgt_batch), opt_state)
+            for batch in dataloader:
+                model, loss, opt_state = train_step(model, batch, opt_state)
 
                 loss_epoch += loss
                 num_batches += 1
@@ -113,4 +116,51 @@ class Trainer:
             if epoch % print_every == 0 or epoch == nb_epochs-1:
                 print(f"{time.strftime('%H:%M:%S')}      Epoch: {epoch:-3d}      Loss: {losses[-1]:-.8f}      Time/Epoch(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\n")
 
-        eqx.tree_serialise_leaves("model.eqx", model)
+            if save_checkpoints and epoch % validate_every == 0:
+                self.learner.model = model
+                eqx.tree_serialise_leaves(save_path+f"checkpoints/model_{epoch:06d}.eqx", model)
+
+            if val_dataloader is not None and epoch % validate_every == 0:
+                val_loss = self.meta_test(val_dataloader, val_criterion)
+                print(f"    Validation loss: {val_loss}")
+                self.val_losses.append(val_loss)
+                if self.val_losses[-1] == min(self.val_losses):
+                    self.learner.model = model
+                    eqx.tree_serialise_leaves(save_path+"best_model.eqx", model)
+                    print(f"    Best model saved at epoch {epoch} with validation loss: {val_loss}")
+
+        self.train_losses += losses
+        self.learner.model = model
+        if save_path:
+            self.save_trainer(save_path)
+
+
+    def meta_test(self, dataloader: DataLoader, criterion="NLL"):
+        """ Test the model using the provided dataloader """
+
+        model = self.learner.model
+
+        @eqx.filter_jit
+        def test_step(model, batch):
+            ctx_data, tgt_data = batch
+            ys, _ = eqx.filter_vmap(model.preprocess_channel_last)(tgt_data)
+            mus, sigmas = model(ctx_data)
+
+            if criterion == "NLL":
+                losses = neg_log_likelihood(mus, sigmas, ys)
+            elif criterion == "MSE":
+                losses = mse(mus, sigmas, ys)
+            elif criterion == "SSIM":
+                losses = ssim(mus, sigmas, ys)
+            elif criterion == "PSNR":
+                losses = psnr(mus, sigmas, ys)
+
+            return losses.mean()
+
+        losses = []
+
+        for batch in dataloader:
+            loss = test_step(model, batch)
+            losses.append(loss)
+
+        return jnp.mean(jnp.array(losses))

@@ -1,4 +1,5 @@
-from selmod import DataLoader, CelebADataset
+from selfmod import DataLoader, CelebADataset
+from ._config import *
 
 class ImageDataset(DataLoader):
     def __init__(self, 
@@ -36,7 +37,7 @@ class ImageDataset(DataLoader):
         tgt_img = self.target_sets.get_image(self.target_sets.files[idx])
         tgt_normed_coords, tgt_pixel_values = self.target_sets.sample_pixels(tgt_img)
 
-        return torch.concat((ctx_normed_coords, ctx_pixel_values), axis=-1), torch.concat((tgt_normed_coords, tgt_pixel_values), axis=-1)
+        return np.concatenate((ctx_normed_coords, ctx_pixel_values), axis=-1), np.concatenate((tgt_normed_coords, tgt_pixel_values), axis=-1)
 
 
     def __len__(self):
@@ -66,7 +67,7 @@ class VideoDataset(DataLoader):
         tgt_vid = self.target_sets.get_video(self.target_sets.files[idx])
         tgt_normed_coords, tgt_pixel_values = self.target_sets.sample_pixels(tgt_vid)
 
-        return torch.concat((ctx_normed_coords, ctx_pixel_values), axis=-1), torch.concat((tgt_normed_coords, tgt_pixel_values), axis=-1)
+        return np.concatenate((ctx_normed_coords, ctx_pixel_values), axis=-1), np.concatenate((tgt_normed_coords, tgt_pixel_values), axis=-1)
 
 
     def __len__(self):

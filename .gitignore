@@ -1,4 +1,58 @@
+*.pyc
+*.tmp
+\.idea
+\.pytest_cache
+.vscode
+.mypy_cache
+# *.npz
+.cache
+.DS_Store
+pintode.egg-info/*
+*vtk
+quadqs_statistics.json
+
+selfmod.egg-info
+selfmod.egg-info/*
+selfmod/__pycache__/*
+
+# For tensorboard logs
+*v2
+*ubyte.gz
+*json.gz
+*.pb
+
+# For slurm out files
+*.out
+
+# For Isambard
+*.pbs*
+!scripts/isambard.pbs
+
+# Artifacts of testing
+selfmod/tests/tmp/*
+
+## Pytorch tmp savings
+*-ubyte
+
+# ## Don't save equinox models
+# *.eqx
+
+## Ignore the example tmp
+examples/tmp/
+
+## Cprofile
+examples/runs/cprofile/*
+
+
+## Ingnore all folders named "tmp", recursively
+**/tmp/
+venv/*
+
+
 examples/voxceleb/data/*
 !examples/voxceleb/data/README.md
 
 examples/celeba/tmp/*
+examples/celeba/runs/*
+examples/celeba/runs/241022-193555-Good/checkpoints/*
+!examples/celeba/runs/241022-193555-Good/

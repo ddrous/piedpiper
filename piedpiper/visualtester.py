@@ -1,44 +1,93 @@
-
+from ._config import *
+from selfmod import make_image, interpolate_2D_image
 
 class VisualTester:
     def __init__(self, trainer):
         self.trainer = trainer
 
-    def visualize_images(self, dataloader):
+    def visualize_losses(self, save_path, log_scale=False, ylim=None):
+        losses = self.trainer.train_losses
+        if isinstance(losses, list):
+            losses = jnp.concatenate(losses)
+
+        ## Plot the loss curve
+        fig, ax = plt.subplots(1, 1, figsize=(12, 4))
+        if ylim is not None:
+            ax.plot(np.clip(losses, None, ylim))
+        ax.set_xlabel("Epochs")
+        ax.set_ylabel("Negative Log Likelihood")
+        if log_scale:
+            ax.set_yscale("log")
+        ax.set_title("Loss curve")
+
+        fig.savefig(save_path+"loss_curve.png")
+
+
+    def visualize_images(self, dataloader, plot_ids=None, nb_envs=None, key=None, save_path=None, interp_method="linear"):
 
         # Visualize an examploe prediction from the latest batch
-        ctx_batch, tgt_batch = next(dataloader)
+        if key is None:
+            key = jax.random.PRNGKey(time.time_ns())
 
-        Xc, Yc = ctx_batch
-        Xt, Yt = tgt_batch
-        mus, sigmas = model(Xc, Yc)
-        # mus, sigmas = jax.tree_map(lambda x: x.reshape((-1, 1024, C)), (mus, sigmas))
+        ctx_batch, tgt_batch = next(iter(dataloader))
+        img_shape = dataloader.dataset.context_sets.img_size
 
-        test_key = jax.random.PRNGKey(time.time_ns())
-        # Yt_hat = jax.random.normal(test_key, mus.shape) * sigmas + mus
-        Yt_hat = mus
+        Xc, Yc = ctx_batch[..., :2], ctx_batch[..., 2:]
+        Xt, Yt = tgt_batch[..., :2], tgt_batch[..., 2:]
+        mus, sigmas = self.trainer.learner.model(ctx_batch)
 
-        plt_idx = jax.random.randint(test_key, (1,), 0, envs_batch_size_all)[0]
-        # print("Yt_hat shape: ", sigmas[plt_idx])
+        nb_envs_max = ctx_batch.shape[0]
+        if plot_ids is None:
+            if nb_envs is None:
+                nb_envs = 1
+            plt_idx = jax.random.randint(key, (nb_envs,), 0, nb_envs_max)[0]
+        nb_envs = len(plot_ids) if plot_ids is not None else nb_envs
+        nb_envs = min(nb_envs, nb_envs_max)
+        print(f"Plotting {nb_envs} environments")
 
-        img_true = make_image(Xt[plt_idx], Yt[plt_idx], img_size=(*resolution, 3))
-        ax1.imshow(img_true)
-        ax1.set_title(f"Target")
+        fig, axs = plt.subplots(nb_envs, 5, figsize=(20, 4*nb_envs))
+        for e in range(nb_envs):
 
-        img_fw = make_image(Xc[plt_idx], Yc[plt_idx], img_size=(*resolution, 3))
-        ax2.imshow(img_fw)
-        ax2.set_title(f"Context Set")
+            if nb_envs > 1:
+                ax1, ax2, ax3, ax4, ax5 = axs[e]
+            else:
+                ax1, ax2, ax3, ax4, ax5 = axs
 
-        # img_pred = make_image(Xt[plt_idx], Yt_hat[plt_idx], img_size=(*resolution, 3))
-        img_pred = mus[plt_idx]
-        ax3.imshow(img_pred)
-        ax3.set_title(f"Prediction")
+            img_true = make_image(Xt[e], Yt[e], img_size=img_shape)
+            ax1.imshow(img_true)
+            if e==0:
+                ax1.set_title(f"Target", fontsize=18)
 
-        # img_std = make_image(Xt[plt_idx], sigmas[plt_idx], img_size=(*resolution, 3))
-        img_std = sigmas[plt_idx]
-        ## rescale to 0-1
-        # img_std = (img_std - img_std.min()) / (img_std.max() - img_std.min())
-        ax4.imshow(img_std)
-        ax4.set_title(f"Uncertainty")
+            img_fw = make_image(Xc[e], Yc[e], img_size=img_shape)
+            ax2.imshow(img_fw)
+            if e==0:
+                ax2.set_title(f"Context Set", fontsize=18)
 
-        fig.savefig("predictions.png")
+            img_pred = mus[e]
+            ax3.imshow(img_pred)
+            if e==0:
+                ax3.set_title(f"Prediction", fontsize=18)
+
+            img_std = sigmas[e]
+            ax4.imshow(img_std)
+            if e==0:
+                ax4.set_title(f"Uncertainty", fontsize=18)
+
+            interpolation = interpolate_2D_image(np.asarray(Xc[e]), np.asarray(Yc[e]), img_shape, method=interp_method)
+            ax5.imshow(interpolation)
+            if e==0:
+                ax5.set_title(f"{interp_method} Int.", fontsize=18)
+
+            ax5.set_xticks([])
+            ax5.set_yticks([])
+            ax1.set_xticks([])
+            ax1.set_yticks([])
+            ax2.set_xticks([])
+            ax2.set_yticks([])
+            ax3.set_xticks([])
+            ax3.set_yticks([])
+            ax4.set_xticks([])
+            ax4.set_yticks([])
+
+        if save_path is not None:
+            fig.savefig(save_path+"predictions.png")

@@ -5,12 +5,7 @@ from selfmod import VNet
 class Learner:
     def __init__(self, 
                  model, 
-                 loss_fn, 
-                 key=None):
-        if key is None:
-            raise ValueError("You must provide a key for the learner.")
-        self.key = key
-
+                 loss_fn):
         self.model = model
         self.loss_fn = loss_fn
 
@@ -76,3 +71,21 @@ class Decoder(eqx.Module):
         return ft
 
 
+
+
+def neg_log_likelihood(mu, sigma, y):
+    # return jnp.log(sigma) + 0.5 * ((y - mu) / sigma) ** 2
+    # return 0.5 * ((y - mu)) ** 2
+    return 0.5 * jnp.log(2*jnp.pi*sigma) + 0.5 * ((y - mu) / sigma) ** 2
+
+def mse(mu, sigma, y_true):
+    return jnp.mean((y_true - mu) ** 2)
+
+def psnr(mu, sigma, y_true):
+    return 20 * jnp.log10(1.0 / jnp.sqrt(jnp.mean((y_true - mu) ** 2)))
+
+def ssim(mu, sigma, y_true):
+    return jax.image.ssim(mu, y_true, 1.0)
+
+def fid(mu, sigma, y_true):
+    return jax.image.fid(mu, y_true, 1.0)

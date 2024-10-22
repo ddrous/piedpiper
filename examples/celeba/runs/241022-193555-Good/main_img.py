@@ -17,7 +17,7 @@ data_folder="../../../Self-Mod/examples/celeb-a/data/"
 # data_folder="/Users/ddrous/Projects/Self-Mod/examples/celeb-a/data/"
 shuffle = False
 num_workers = 0
-latent_chans = 32
+latent_chans = 16
 
 envs_batch_size = 2
 envs_batch_size_all = envs_batch_size
