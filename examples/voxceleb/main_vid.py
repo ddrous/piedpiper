@@ -1,8 +1,76 @@
 
+#%%
+%load_ext autoreload
+%autoreload 2
+
+from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder
+from piedpiper import *
+
+## For reproducibility
+seed = 2026
+
+## Dataloader hps
+k_shots = 100
+resolution = (32, 32)
+T, H, W, C = (5, *resolution, 3)
+
+data_folder="./data/"
+shuffle = True
+num_workers = 0
+latent_chans = 32
+
+envs_batch_size = 8
+envs_batch_size_all = envs_batch_size
+num_batches = 4*1
+
+init_lr = 5e-5
+nb_epochs = 20000
+print_every = 500
+validate_every = 1000
+sched_factor = 1.0
+eps = 1e-6  ## Small value to avoid division by zero
+
+# run_folder = None
+run_folder = "./runs/241023-110210-Test/"
+
+meta_train = True
+
+
+#%%
+
+if run_folder==None:
+    run_folder = make_run_folder('./runs/')
+else:
+    print("Using existing run folder:", run_folder)
+
+_ = setup_run_folder(run_folder, os.path.basename(__file__))
 
 
 
+#%%
 
+## List every dir in the data folder
+
+train_dataset = VideoDataset(data_folder, 
+                      data_split="train", 
+                      num_shots=k_shots, 
+                      num_frames=T, 
+                      resolution=resolution, 
+                      order_pixels=False, 
+                      max_envs=envs_batch_size_all*num_batches,
+                      seed=seed)
+# print("Total number of environments in the training dataset:", len(train_dataset))
+train_dataloader = NumpyLoader(train_dataset, 
+                               batch_size=envs_batch_size, 
+                               shuffle=shuffle, 
+                               num_workers=num_workers)
+
+ctx_videos, tgt_videos = next(iter(train_dataloader))
+vt = VisualTester(None)
+vt.visualize_video_frames(ctx_videos[0], resolution)
+vt.visualize_video_frames(tgt_videos[0], resolution)
+
+#%%
 
 class Cell(eqx.Module):
     encoder: eqx.Module

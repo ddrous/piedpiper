@@ -9,7 +9,7 @@ from piedpiper import *
 seed = 2026
 
 ## Dataloader hps
-k_shots = 100
+k_shots = 10
 resolution = (32, 32)
 H, W, C = (*resolution, 3)
 
@@ -19,21 +19,21 @@ shuffle = False
 num_workers = 0
 latent_chans = 32
 
-envs_batch_size = 2
+envs_batch_size = 8
 envs_batch_size_all = envs_batch_size
 num_batches = 4*1
 
 init_lr = 5e-5
-nb_epochs = 2500
+nb_epochs = 20000
 print_every = 500
 validate_every = 1000
 sched_factor = 1.0
 eps = 1e-6  ## Small value to avoid division by zero
 
-# run_folder = None
-run_folder = "./runs/241022-193555-Good/"
+run_folder = None
+# run_folder = "./runs/241022-193555-Good/"
 
-meta_train = False
+meta_train = True
 
 
 #%%
@@ -209,7 +209,7 @@ test_dataloader = NumpyLoader(train_dataset,
                               num_workers=num_workers,
                               drop_last=False)
 
-visualtester.visualize_images(test_dataloader, nb_envs=2, key=test_key, save_path=run_folder, interp_method="linear")
+visualtester.visualize_images(test_dataloader, nb_envs=8, key=test_key, save_path=run_folder, interp_method="linear")
 
 
 #%%

@@ -51,6 +51,10 @@ venv/*
 
 examples/voxceleb/data/*
 !examples/voxceleb/data/README.md
+!examples/voxceleb/data/list_eval_partition.txt
+
+examples/voxceleb/tmp/*
+examples/voxceleb/runs/*
 
 examples/celeba/tmp/*
 examples/celeba/runs/*

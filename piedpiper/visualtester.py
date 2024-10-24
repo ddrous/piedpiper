@@ -8,7 +8,7 @@ class VisualTester:
     def visualize_losses(self, save_path, log_scale=False, ylim=None):
         losses = self.trainer.train_losses
         if isinstance(losses, list):
-            losses = jnp.concatenate(losses)
+            losses = jnp.stack(losses)
 
         ## Plot the loss curve
         fig, ax = plt.subplots(1, 1, figsize=(12, 4))
@@ -22,6 +22,18 @@ class VisualTester:
 
         fig.savefig(save_path+"loss_curve.png")
 
+    def visualize_video_frames(self, video, resolution):
+        nb_frames = video.shape[0]
+        fig, axs = plt.subplots(1, nb_frames, figsize=(2*nb_frames, 2))
+        for i in range(nb_frames):
+            xy, rgb = video[i, :, :2], video[i, :, 2:]
+            img = make_image(xy, rgb, img_size=(*resolution, 3))
+            axs[i].imshow(img)
+            # axs[i].axis("off")
+            axs[i].set_xticks([])
+            axs[i].set_yticks([])
+            axs[i].set_title(f"Frame {i}")
+        plt.show()
 
     def visualize_images(self, dataloader, plot_ids=None, nb_envs=None, key=None, save_path=None, interp_method="linear"):
 
