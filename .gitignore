@@ -43,6 +43,7 @@ examples/tmp/
 ## Cprofile
 examples/runs/cprofile/*
 
+piedpiper.egg-info/*
 
 ## Ingnore all folders named "tmp", recursively
 **/tmp/
