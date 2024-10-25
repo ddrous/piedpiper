@@ -102,7 +102,7 @@ class ConvCNP(eqx.Module):
         ## From the ConvCNP paper, Figure 1c
         keys = jax.random.split(key, 2)
         self.encoder = Encoder(C, H, W, key=keys[0])    ## E
-        self.decoder = Decoder(C, H, W, in_chans=C, out_chans=latent_chans, key=keys[1])    ## rho
+        self.decoder = Decoder(C, H, W, in_chans=C, latent_chans=latent_chans, key=keys[1])    ## rho
         self.positivity = lambda x: jnp.clip(jax.nn.softplus(x), eps, 1)
 
     def preprocess(self, XY):
@@ -203,7 +203,7 @@ test_dataset = ImageDataset(data_folder,
                             resolution=resolution,
                             max_envs=envs_batch_size*num_batches,
                             )
-test_dataloader = NumpyLoader(train_dataset, 
+test_dataloader = NumpyLoader(test_dataset, 
                               batch_size=envs_batch_size, 
                               shuffle=True,
                               num_workers=num_workers,

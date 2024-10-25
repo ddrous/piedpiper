@@ -5,9 +5,11 @@ from selfmod import VNet
 class Learner:
     def __init__(self, 
                  model, 
-                 loss_fn):
+                 loss_fn,
+                 images=True):
         self.model = model
         self.loss_fn = loss_fn
+        self.images = images
 
     def save_learner(self, path):
         assert path[-1] == "/", "ERROR: Invalid path provided. The path must end with /"
@@ -48,12 +50,12 @@ class Decoder(eqx.Module):
     vnet: eqx.Module
     mlp: eqx.nn.Conv2d
 
-    def __init__(self, C, H, W, in_chans=3, out_chans=8, kernel_size=5, levels=4, depth=8, *, key):
+    def __init__(self, C, H, W, in_chans=3, latent_chans=8, kernel_size=5, levels=4, depth=8, *, key):
         super().__init__()
         keys = jax.random.split(key, 4)
 
         self.vnet = VNet(input_shape=(in_chans, H, W), 
-                         output_shape=(out_chans, H, W), 
+                         output_shape=(latent_chans, H, W), 
                          levels=levels, 
                          depth=depth,
                          kernel_size=kernel_size,
@@ -63,7 +65,7 @@ class Decoder(eqx.Module):
                          dropout_rate=0.,
                          key=keys[0],)
 
-        self.mlp = eqx.nn.Conv2d(out_chans, 2*C, 1, padding="same", key=keys[2])
+        self.mlp = eqx.nn.Conv2d(latent_chans, 2*C, 1, padding="same", key=keys[2])
 
     def __call__(self, hc):
         h = self.vnet(hc)

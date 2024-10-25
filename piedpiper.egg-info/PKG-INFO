@@ -1,9 +1,0 @@
-Metadata-Version: 2.1
-Name: piedpiper
-Version: 0.0.1
-Summary: Video compression with neural processes
-Author-email: Roussel Desmond Nzoyem <desmond.ngueguin@gmail.com>
-Requires-Dist: jax>=0.3.4
-Provides-Extra: dev
-Requires-Dist: seaborn; extra == "dev"
-Requires-Dist: pyvista[trame]; extra == "dev"

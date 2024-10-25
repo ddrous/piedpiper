@@ -1,7 +1,0 @@
-README.md
-pyproject.toml
-piedpiper.egg-info/PKG-INFO
-piedpiper.egg-info/SOURCES.txt
-piedpiper.egg-info/dependency_links.txt
-piedpiper.egg-info/requires.txt
-piedpiper.egg-info/top_level.txt

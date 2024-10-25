@@ -92,7 +92,7 @@ class Trainer:
         @eqx.filter_jit
         def train_step(model, batch, opt_state):
             loss, grads = eqx.filter_value_and_grad(loss_fn)(model, batch)
-            updates, opt_state = opt.update(grads, opt_state)
+            updates, opt_state = opt.update(grads, opt_state, eqx.filter(model, eqx.is_array))
             model = eqx.apply_updates(model, updates)
             return model, loss, opt_state
 
@@ -121,7 +121,10 @@ class Trainer:
                 eqx.tree_serialise_leaves(save_path+f"checkpoints/model_{epoch:06d}.eqx", model)
 
             if val_dataloader is not None and epoch % validate_every == 0:
-                val_loss = self.meta_test(val_dataloader, val_criterion)
+                if self.learner.images:
+                    val_loss = self.meta_test_img(val_dataloader, val_criterion)
+                else:
+                    val_loss = self.meta_test_vid(val_dataloader, val_criterion)
                 print(f"    Validation loss: {val_loss}")
                 self.val_losses.append(val_loss)
                 if self.val_losses[-1] == min(self.val_losses):
@@ -135,7 +138,7 @@ class Trainer:
             self.save_trainer(save_path)
 
 
-    def meta_test(self, dataloader: DataLoader, criterion="NLL"):
+    def meta_test_img(self, dataloader: DataLoader, criterion="NLL"):
         """ Test the model using the provided dataloader """
 
         model = self.learner.model
@@ -145,6 +148,39 @@ class Trainer:
             ctx_data, tgt_data = batch
             ys, _ = eqx.filter_vmap(model.preprocess_channel_last)(tgt_data)
             mus, sigmas = model(ctx_data)
+
+            if criterion == "NLL":
+                losses = neg_log_likelihood(mus, sigmas, ys)
+            elif criterion == "MSE":
+                losses = mse(mus, sigmas, ys)
+            elif criterion == "SSIM":
+                losses = ssim(mus, sigmas, ys)
+            elif criterion == "PSNR":
+                losses = psnr(mus, sigmas, ys)
+
+            return losses.mean()
+
+        losses = []
+
+        for batch in dataloader:
+            loss = test_step(model, batch)
+            losses.append(loss)
+
+        return jnp.mean(jnp.array(losses))
+    
+
+    def meta_test_vid(self, dataloader: DataLoader, criterion="NLL"):
+        """ Test the model using the provided dataloader """
+
+        model = self.learner.model
+
+        @eqx.filter_jit
+        def test_step(model, batch):
+            ctx_data, tgt_data = batch
+            ys, _ = eqx.filter_vmap(eqx.filter_vmap(model.cell.preprocess_channel_last))(tgt_data)  #ys shape: (B, T, H, W, C)
+
+            # keys = jax.random.split(key, ctx_data.shape[0])
+            (mus, sigmas), ctx_vids = eqx.filter_vmap(model.bootstrap_predict)(tgt_data)              ## mu, sigma shape: (B, T, H, W, C)
 
             if criterion == "NLL":
                 losses = neg_log_likelihood(mus, sigmas, ys)
