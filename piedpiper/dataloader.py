@@ -1,18 +1,17 @@
-from selfmod import DataLoader, CelebADataset
+from selfmod import CelebADataset
 from ._config import *
 
 from typing import Tuple
-from abc import abstractmethod
 
 import pandas as pd
 import torch
-from torchvision.transforms import transforms
-from torch.utils import data
+from torch.utils.data.dataset import Dataset
+# from jax_dataloader import Dataset
 from PIL import Image
 import cv2
 
 
-class ImageDataset(DataLoader):
+class ImageDataset(Dataset):
     def __init__(self, 
                  data_path="./data/", 
                  data_split="train",
@@ -30,6 +29,7 @@ class ImageDataset(DataLoader):
                                             order_pixels=order_pixels, 
                                             resolution=resolution,
                                             )
+        # self.target_sets = self.context_sets
         self.target_sets = CelebADataset(data_path, 
                                         data_split=data_split,
                                         num_shots=np.prod(resolution), 
@@ -64,7 +64,7 @@ class ImageDataset(DataLoader):
 
 
 
-class VideoDataset(DataLoader):
+class VideoDataset(Dataset):
     def __init__(self, 
                  data_path="./data/", 
                  data_split="train",
@@ -119,7 +119,7 @@ class VideoDataset(DataLoader):
 
 
 
-class Vox2Dataset(DataLoader):
+class Vox2Dataset(Dataset):
     """
     A celeb a dataloader for meta-learning.
     """

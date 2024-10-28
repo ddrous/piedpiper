@@ -39,7 +39,7 @@ class Encoder(eqx.Module):
         self.conv1 = eqx.nn.Conv2d(1, 1, kernel_size, padding="same", key=keys[0])
         self.conv2 = eqx.nn.Conv2d(C, C-1, kernel_size, padding="same", key=keys[1])
 
-    def __call__(self, Mc, Ic):
+    def __call__(self, Ic, Mc):
         h0 = self.conv1(Mc)
         Zc = Mc * Ic
         h = self.conv2(Zc) / (h0)

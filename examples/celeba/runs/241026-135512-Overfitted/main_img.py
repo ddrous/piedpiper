@@ -10,7 +10,6 @@ x = jnp.linspace(0, 1, 100)
 
 from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder
 from piedpiper import *
-import jax_dataloader as jdl
 
 ## For reproducibility
 seed = 2026
@@ -23,16 +22,16 @@ H, W, C = (*resolution, 3)
 data_folder="../../../Self-Mod/examples/celeb-a/data/"
 # data_folder="/Users/ddrous/Projects/Self-Mod/examples/celeb-a/data/"
 shuffle = False
-num_workers = 16
+num_workers = 0
 latent_chans = 16
 
-envs_batch_size = 16
+envs_batch_size = 1
 envs_batch_size_all = envs_batch_size
-num_batches = 16*1
+num_batches = 8*1
 
 init_lr = 1e-4
 sched_factor = 0.2
-nb_epochs = 10000
+nb_epochs = 30000
 print_every = 500
 validate_every = 1000
 eps = 1e-6  ## Small value to avoid division by zero
@@ -66,54 +65,23 @@ train_dataset = ImageDataset(data_folder,
                             resolution=resolution,
                             max_envs=envs_batch_size*num_batches,
                             )
-
-# m_dataset = pygrain.MapDataset(train_dataset, lambda x: x)
-# print("Number of records in the dataset:", len(m_dataset))
-# # import orbax as ob
-# # print("Orbax version:", ob.__version__)
-# sampler = pygrain.IndexSampler(num_records=50,
-#                                 num_epochs=20,
-#                                 shard_options=pygrain.NoSharding(),
-#                                 shuffle=shuffle,
-#                                 seed=seed,
-#                             )
-# class DummyOp(pygrain.MapTransform):
-#   """A dummy operations."""
-#   def map(self, element):
-#     return element
-# train_dataloader = pygrain.DataLoader(data_source=train_dataset,
-#                                     operations=[DummyOp()],
-#                                     sampler=sampler,
-#                                     worker_count=0,  # Scale to multiple workers in multiprocessing
-#                                 )
-
-# train_dataloader = NumpyLoader(train_dataset, 
-#                               batch_size=envs_batch_size, 
-#                               shuffle=shuffle,
-#                               num_workers=num_workers,
-#                               drop_last=False)
-
-train_dataloader = jdl.DataLoader(train_dataset, 
+train_dataloader = NumpyLoader(train_dataset, 
                               batch_size=envs_batch_size, 
-                              backend='pytorch',
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
-gen_train_dataloader = iter(train_dataloader)
-batch = next(gen_train_dataloader)
-print([dat.shape for dat in batch])
 
 #%% 
 
+gen_train_dataloader = iter(train_dataloader)
 
 batch = next(gen_train_dataloader)
-print([dat.shape for dat in batch])
+# print([dat.shape for dat in batch])
 
 dat_context, dat_target = batch
 Xc, Yc = dat_context[0,..., :2], dat_context[0,..., 2:]
 Xt, Yt = dat_target[0,..., :2], dat_target[0,..., 2:]
-print("Context shape:", Xc.shape, Yc.shape)
 
 fig, axs = plt.subplots(1, 2, figsize=(7, 3))
 img = make_image(Xt, Yt, img_size=(*resolution, 3))
@@ -201,8 +169,7 @@ print("Data context shape is:", dat_context.shape)
 
 #%%
 ## Define optimiser and train the model
-# total_steps = nb_epochs*train_dataloader.num_batches
-total_steps = nb_epochs*num_batches
+total_steps = nb_epochs*train_dataloader.num_batches
 bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
 sched = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
 opt = optax.chain(optax.clip(1e+2), optax.adam(sched))
@@ -238,7 +205,6 @@ test_dataset = ImageDataset(data_folder,
                             order_pixels=False, 
                             resolution=resolution,
                             max_envs=envs_batch_size*num_batches,
-                            seed=time.time_ns()%(2**32)
                             )
 test_dataloader = NumpyLoader(test_dataset, 
                               batch_size=envs_batch_size, 

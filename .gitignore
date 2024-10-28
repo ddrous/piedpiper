@@ -61,3 +61,5 @@ examples/celeba/tmp/*
 examples/celeba/runs/*
 examples/celeba/runs/241022-193555-Good/checkpoints/*
 !examples/celeba/runs/241022-193555-Good/
+!examples/celeba/runs/241026-135512-Overfitted/
+!examples/celeba/runs/241027-203511-DecentButSlow/

@@ -112,7 +112,7 @@ class Cell(eqx.Module):
 
     def __call__(self, Inp, Mem):
         Ic, Mc = self.preprocess(Inp)   ## Context pixels and their location
-        hc = self.encoder(Mc, Ic)   ## Normalized convolution
+        hc = self.encoder(Ic, Mc)   ## Normalized convolution
 
         Mem = Mem.transpose(2, 0, 1)    ## Shape: (C, H, W)
         mem_h = self.mem_gate(jnp.concatenate([hc, Mem], axis=0))      ## TODO The key.

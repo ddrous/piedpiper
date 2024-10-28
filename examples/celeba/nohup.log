@@ -1,0 +1,29 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.35
+Available devices: [CudaDevice(id=0)]
+
+############# Pied Piper Video Compression #############
+
+Jax version: 0.4.35
+Available devices: [CudaDevice(id=0)]
+Created a new run folder at: ./runs/241026-144817/
+Completed copied scripts 
+Created a new adaptation folder at: ./runs/241026-144817/adapt/
+/home/gb21553/miniconda3/envs/jaxgpu/lib/python3.11/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Data context shape is: (16, 500, 5)
+14:48:28      Epoch:   0      Loss: 0.99873686      Time/Epoch(s): 5.9153
+/home/gb21553/miniconda3/envs/jaxgpu/lib/python3.11/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+    Validation loss: 0.9494221210479736
+    Best model saved at epoch 0 with validation loss: 0.9494221210479736
+/home/gb21553/miniconda3/envs/jaxgpu/lib/python3.11/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+14:56:28      Epoch: 500      Loss: 0.24142948      Time/Epoch(s): 0.9782
+15:04:18      Epoch: 1000      Loss: 0.14604326      Time/Epoch(s): 0.9550
+    Validation loss: 0.147257000207901
+    Best model saved at epoch 1000 with validation loss: 0.147257000207901
+/home/gb21553/miniconda3/envs/jaxgpu/lib/python3.11/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()

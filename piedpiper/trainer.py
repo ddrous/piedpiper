@@ -1,7 +1,6 @@
 import pickle
 from typing import Any, Tuple
 
-from .dataloader import DataLoader
 from .learner import *
 from .visualtester import VisualTester
 from ._config import *
@@ -71,7 +70,7 @@ class Trainer:
 
 
     def meta_train(self,
-                    dataloader: DataLoader, 
+                    dataloader, 
                     nb_epochs,
                     print_every=1, 
                     save_checkpoints=False,
@@ -138,7 +137,7 @@ class Trainer:
             self.save_trainer(save_path)
 
 
-    def meta_test_img(self, dataloader: DataLoader, criterion="NLL"):
+    def meta_test_img(self, dataloader, criterion="NLL"):
         """ Test the model using the provided dataloader """
 
         model = self.learner.model
@@ -169,7 +168,7 @@ class Trainer:
         return jnp.mean(jnp.array(losses))
     
 
-    def meta_test_vid(self, dataloader: DataLoader, criterion="NLL"):
+    def meta_test_vid(self, dataloader, criterion="NLL"):
         """ Test the model using the provided dataloader """
 
         model = self.learner.model
