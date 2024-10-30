@@ -4,7 +4,7 @@
 
 import os
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = '.5'
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'true'
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 import jax.numpy as jnp
 x = jnp.linspace(0, 1, 100)
 
@@ -20,8 +20,8 @@ k_shots = 500
 resolution = (32, 32)
 H, W, C = (*resolution, 3)
 
-data_folder="../../../Self-Mod/examples/celeb-a/data/"
-# data_folder="/Users/ddrous/Projects/Self-Mod/examples/celeb-a/data/"
+# data_folder="../../../Self-Mod/examples/celeb-a/data/"
+data_folder="./data/"
 shuffle = False
 num_workers = 16
 latent_chans = 16

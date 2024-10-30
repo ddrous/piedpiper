@@ -57,6 +57,9 @@ examples/voxceleb/data/*
 examples/voxceleb/tmp/*
 examples/voxceleb/runs/*
 
+examples/celeba/data/*
+!examples/celeba/tmp/list_eval_partition.txt
+
 examples/celeba/tmp/*
 examples/celeba/runs/*
 examples/celeba/runs/241022-193555-Good/checkpoints/*
