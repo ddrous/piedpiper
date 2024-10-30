@@ -20,10 +20,10 @@ k_shots = 500
 resolution = (32, 32)
 H, W, C = (*resolution, 3)
 
-# data_folder="../../../Self-Mod/examples/celeb-a/data/"
-data_folder="./data/"
+data_folder="../../../Self-Mod/examples/celeb-a/data/"
+# data_folder="./data/"
 shuffle = False
-num_workers = 16
+num_workers = 24
 latent_chans = 16
 
 envs_batch_size = 16
@@ -87,18 +87,18 @@ train_dataset = ImageDataset(data_folder,
 #                                     worker_count=0,  # Scale to multiple workers in multiprocessing
 #                                 )
 
-# train_dataloader = NumpyLoader(train_dataset, 
-#                               batch_size=envs_batch_size, 
-#                               shuffle=shuffle,
-#                               num_workers=num_workers,
-#                               drop_last=False)
-
-train_dataloader = jdl.DataLoader(train_dataset, 
+train_dataloader = NumpyLoader(train_dataset, 
                               batch_size=envs_batch_size, 
-                              backend='pytorch',
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
+
+# train_dataloader = jdl.DataLoader(train_dataset, 
+#                               batch_size=envs_batch_size, 
+#                               backend='pytorch',
+#                               shuffle=shuffle,
+#                               num_workers=num_workers,
+#                               drop_last=False)
 
 gen_train_dataloader = iter(train_dataloader)
 batch = next(gen_train_dataloader)
