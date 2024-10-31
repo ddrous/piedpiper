@@ -1,12 +1,13 @@
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = '.5'
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 import jax.numpy as jnp
 x = jnp.linspace(0, 1, 100)
+print(x)
 
 from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder
 from piedpiper import *
@@ -20,21 +21,21 @@ k_shots = 500
 resolution = (32, 32)
 H, W, C = (*resolution, 3)
 
-data_folder="../../../Self-Mod/examples/celeb-a/data/"
-# data_folder="./data/"
+# data_folder="../../../Self-Mod/examples/celeb-a/data/"
+data_folder="./data/"
 shuffle = False
 num_workers = 24
 latent_chans = 16
 
 envs_batch_size = 16
 envs_batch_size_all = envs_batch_size
-num_batches = 16*1
+num_batches = 32*1
 
 init_lr = 1e-4
 sched_factor = 0.2
-nb_epochs = 10000
-print_every = 500
-validate_every = 1000
+nb_epochs = 100
+print_every = 5
+validate_every = 10
 eps = 1e-6  ## Small value to avoid division by zero
 
 run_folder = None
@@ -212,6 +213,7 @@ trainer = Trainer(learner, opt)
 
 ## Training loop
 if meta_train:
+    # with jax.profiler.trace("/tmp/jax-trace", create_perfetto_link=True):
     trainer.meta_train(train_dataloader,
                         nb_epochs=nb_epochs,
                         print_every=print_every,

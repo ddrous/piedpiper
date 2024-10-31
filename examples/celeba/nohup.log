@@ -2,28 +2,38 @@
 ############# Contextual Self-Modulation #############
 
 Jax version: 0.4.35
-Available devices: [CudaDevice(id=0)]
+Available devices: [CudaDevice(id=0), CudaDevice(id=1), CudaDevice(id=2), CudaDevice(id=3)]
 
 ############# Pied Piper Video Compression #############
 
 Jax version: 0.4.35
-Available devices: [CudaDevice(id=0)]
-Created a new run folder at: ./runs/241026-144817/
+Available devices: [CudaDevice(id=0), CudaDevice(id=1), CudaDevice(id=2), CudaDevice(id=3)]
+Created a new run folder at: ./runs/241031-182649/
 Completed copied scripts 
-Created a new adaptation folder at: ./runs/241026-144817/adapt/
-/home/gb21553/miniconda3/envs/jaxgpu/lib/python3.11/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-Data context shape is: (16, 500, 5)
-14:48:28      Epoch:   0      Loss: 0.99873686      Time/Epoch(s): 5.9153
-/home/gb21553/miniconda3/envs/jaxgpu/lib/python3.11/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-    Validation loss: 0.9494221210479736
-    Best model saved at epoch 0 with validation loss: 0.9494221210479736
-/home/gb21553/miniconda3/envs/jaxgpu/lib/python3.11/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-14:56:28      Epoch: 500      Loss: 0.24142948      Time/Epoch(s): 0.9782
-15:04:18      Epoch: 1000      Loss: 0.14604326      Time/Epoch(s): 0.9550
-    Validation loss: 0.147257000207901
-    Best model saved at epoch 1000 with validation loss: 0.147257000207901
-/home/gb21553/miniconda3/envs/jaxgpu/lib/python3.11/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
+Created a new adaptation folder at: ./runs/241031-182649/adapt/
+[(1, 500, 5), (1, 1024, 5)]
+[(1, 500, 5), (1, 1024, 5)]
+Context shape: (500, 2) (500, 3)
+Data context shape is: (1, 500, 5)
+18:27:01      Epoch:   0      Loss: 1.07174563      Time/Epoch(s): 4.9181
+    Validation loss: 1.066359043121338
+    Best model saved at epoch 0 with validation loss: 1.066359043121338
+18:27:02      Epoch:   2      Loss: 1.06132257      Time/Epoch(s): 0.0363
+Traceback (most recent call last):
+  File "/lus/lfs1aip1/home/benchmarking/ddrous.benchmarking/Projects/PiedPiper/examples/celeba/main_img.py", line 215, in <module>
+    with jax.profiler.trace("/tmp/jax-trace", create_perfetto_link=True):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/benchmarking/ddrous.benchmarking/miniforge3/envs/jaxgpu/lib/python3.12/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/home/benchmarking/ddrous.benchmarking/miniforge3/envs/jaxgpu/lib/python3.12/site-packages/jax/_src/profiler.py", line 256, in trace
+    stop_trace()
+  File "/home/benchmarking/ddrous.benchmarking/miniforge3/envs/jaxgpu/lib/python3.12/site-packages/jax/_src/profiler.py", line 207, in stop_trace
+    _host_perfetto_trace_file(abs_filename)
+  File "/home/benchmarking/ddrous.benchmarking/miniforge3/envs/jaxgpu/lib/python3.12/site-packages/jax/_src/profiler.py", line 182, in _host_perfetto_trace_file
+    with socketserver.TCPServer(('127.0.0.1', port), _PerfettoServer) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/benchmarking/ddrous.benchmarking/miniforge3/envs/jaxgpu/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/home/benchmarking/ddrous.benchmarking/miniforge3/envs/jaxgpu/lib/python3.12/socketserver.py", line 473, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use

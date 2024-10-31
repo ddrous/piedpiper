@@ -37,6 +37,10 @@ selfmod/tests/tmp/*
 # ## Don't save equinox models
 # *.eqx
 
+## Bvidia reports
+*.nsys-rep
+*.sqlite
+
 ## Ignore the example tmp
 examples/tmp/
 
