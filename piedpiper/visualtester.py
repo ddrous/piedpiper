@@ -56,41 +56,43 @@ class VisualTester:
         nb_envs_max = ctx_batch.shape[0]
         if plot_ids is None:
             if nb_envs is None:
-                nb_envs = 1
-            plt_idx = jax.random.randint(key, (nb_envs,), 0, nb_envs_max)[0]
+                nb_envs = 2
+            plot_ids = jax.random.randint(key, (nb_envs,), 0, nb_envs_max)
         nb_envs = len(plot_ids) if plot_ids is not None else nb_envs
         nb_envs = min(nb_envs, nb_envs_max)
         print(f"Plotting {nb_envs} environments")
 
         fig, axs = plt.subplots(nb_envs, 5, figsize=(20, 4*nb_envs))
         for e in range(nb_envs):
+        # for e, plt_id in enumerate(plot_ids):
+            e_ = plot_ids[e]
 
             if nb_envs > 1:
                 ax1, ax2, ax3, ax4, ax5 = axs[e]
             else:
                 ax1, ax2, ax3, ax4, ax5 = axs
 
-            img_true = make_image(Xt[e], Yt[e], img_size=img_shape)
+            img_true = make_image(Xt[e_], Yt[e_], img_size=img_shape)
             ax1.imshow(img_true)
             if e==0:
                 ax1.set_title(f"Target", fontsize=18)
 
-            img_fw = make_image(Xc[e], Yc[e], img_size=img_shape)
+            img_fw = make_image(Xc[e_], Yc[e_], img_size=img_shape)
             ax2.imshow(img_fw)
             if e==0:
                 ax2.set_title(f"Context Set", fontsize=18)
 
-            img_pred = mus[e]
+            img_pred = mus[e_]
             ax3.imshow(img_pred)
             if e==0:
                 ax3.set_title(f"Prediction", fontsize=18)
 
-            img_std = sigmas[e]
+            img_std = sigmas[e_]
             ax4.imshow(img_std)
             if e==0:
                 ax4.set_title(f"Uncertainty", fontsize=18)
 
-            interpolation = interpolate_2D_image(np.asarray(Xc[e]), np.asarray(Yc[e]), img_shape, method=interp_method)
+            interpolation = interpolate_2D_image(np.asarray(Xc[e_]), np.asarray(Yc[e_]), img_shape, method=interp_method)
             ax5.imshow(interpolation)
             if e==0:
                 ax5.set_title(f"{interp_method} Int.", fontsize=18)
@@ -107,4 +109,4 @@ class VisualTester:
             ax4.set_yticks([])
 
         if save_path is not None:
-            fig.savefig(save_path+"predictions.png")
+            fig.savefig(save_path)
