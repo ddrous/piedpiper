@@ -220,7 +220,7 @@ if meta_train:
                         save_checkpoints=True,
                         save_path=run_folder,
                         val_dataloader=train_dataloader,
-                        val_criterion="NLL",
+                        val_criterion="MSE",
                         validate_every=validate_every,
                         )
 else:
@@ -232,8 +232,9 @@ else:
 # print("Training losses:", jnp.stack(trainer.train_losses))
 
 visualtester = VisualTester(trainer)
-visualtester.visualize_losses(run_folder, log_scale=False, ylim=1)
+visualtester.visualize_losses(run_folder+"loss_curve.png", log_scale=False, ylim=1)
 
+#%%
 test_dataset = ImageDataset(data_folder, 
                             data_split="test",
                             num_shots=k_shots, 
@@ -248,7 +249,7 @@ test_dataloader = NumpyLoader(test_dataset,
                               num_workers=num_workers,
                               drop_last=False)
 
-visualtester.visualize_images(test_dataloader, nb_envs=None, key=None, save_path=run_folder+"predictions_val.png", interp_method="linear", plot_ids=range(8))
+visualtester.visualize_images(test_dataloader, nb_envs=None, key=None, save_path=run_folder+"predictions_test.png", interp_method="linear", plot_ids=range(8))
 
 
 #%%

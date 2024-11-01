@@ -232,15 +232,15 @@ else:
 # print("Training losses:", jnp.stack(trainer.train_losses))
 
 visualtester = VisualTester(trainer)
-visualtester.visualize_losses(run_folder, log_scale=False, ylim=1)
+visualtester.visualize_losses(run_folder+"loss_curve.png", log_scale=False, ylim=1)
 
 test_dataset = ImageDataset(data_folder, 
-                            data_split="test",
+                            data_split="val",
                             num_shots=k_shots, 
                             order_pixels=False, 
                             resolution=resolution,
                             max_envs=envs_batch_size*1,
-                            seed=time.time_ns()%(2**32)
+                            seed=None,
                             )
 test_dataloader = NumpyLoader(test_dataset, 
                               batch_size=envs_batch_size, 
@@ -248,7 +248,7 @@ test_dataloader = NumpyLoader(test_dataset,
                               num_workers=num_workers,
                               drop_last=False)
 
-visualtester.visualize_images(test_dataloader, nb_envs=8, key=None, save_path=run_folder, interp_method="linear")
+visualtester.visualize_images(test_dataloader, nb_envs=None, key=None, save_path=run_folder+"predictions_val.png", interp_method="linear", plot_ids=range(8))
 
 
 #%%

@@ -25,6 +25,8 @@ class Trainer:
 
         self.train_losses = []
         self.val_losses = []
+
+        self.val_criterion = None
  
     def save_trainer(self, path, ignore_losses=False):
         assert path[-1] == "/", "ERROR: The path must end with /"
@@ -49,17 +51,20 @@ class Trainer:
             histories = np.load(path+"checkpoints/train_histories.npz")
         else:
             print("WARNING: No training history found at all. Using tens.")
-            histories = {'train_losses': jnp.inf*np.ones((1,))}
-        self.train_losses = histories['train_losses']
+            histories = {'train_losses': jnp.inf*np.ones((1,)), 'val_losses': jnp.inf*np.ones((1,))}
 
-        if os.path.exists(path+"val_losses.npy"):
-            self.val_losses = [np.load(path+"val_losses.npy")]
-        elif os.path.exists(path+"checkpoints/val_losses.npy"):
-            print("WARNING: No validation history found in the provided path. Using checkpointed ones.")
-            self.val_losses = [np.load(path+"checkpoints/val_losses.npy")]
+        self.train_losses = histories['train_losses']
+        if 'val_losses' in histories:
+            self.val_losses = histories['val_losses']
         else:
-            print("WARNING: No validation history found at all. Using ten.")
-            self.val_losses = []
+            if os.path.exists(path+"val_losses.npy"):
+                self.val_losses = [np.load(path+"val_losses.npy")]
+            elif os.path.exists(path+"checkpoints/val_losses.npy"):
+                print("WARNING: No validation history found in the provided path. Using checkpointed ones.")
+                self.val_losses = [np.load(path+"checkpoints/val_losses.npy")]
+            else:
+                print("WARNING: No validation history found at all. Using ten.")
+                self.val_losses = []
 
         if os.path.exists(path+"opt_state.pkl"):
             self.opt_state = pickle.load(open(path+"opt_state.pkl", "rb"))
@@ -84,6 +89,8 @@ class Trainer:
         opt_state = self.opt_state
         model = self.learner.model
         loss_fn = self.learner.loss_fn
+
+        self.val_criterion = val_criterion
 
         if save_checkpoints:
             os.makedirs(save_path+"checkpoints", exist_ok=True)
