@@ -32,7 +32,7 @@ import diffrax
 import jax.numpy as jnp
 
 import optax
-import grain.python as pygrain
+# import grain.python as pygrain
 # jax.config.update("jax_debug_nans", True)
 # jax.config.update("jax_platform_name", "cpu")
 # jax.config.update("jax_enable_x64", True)

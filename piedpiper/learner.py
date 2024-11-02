@@ -17,7 +17,15 @@ class Learner:
 
     def load_learner(self, path):
         assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
-        self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
+        if os.path.exists(path+"model.eqx"):
+            # print(f"\nLoading model from {path} folder ...\n")
+            self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
+        elif os.path.exists(path+"best_model.eqx"):
+            print("WARNING: No model found in the provided path. Using the best model found.")
+            self.model = eqx.tree_deserialise_leaves(path+"best_model.eqx", self.model)
+        else:
+            raise FileNotFoundError("ERROR: No model found in the provided path.")
+
 
 
 

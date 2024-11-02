@@ -1,6 +1,6 @@
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = '.5'
@@ -9,16 +9,16 @@ import jax.numpy as jnp
 x = jnp.linspace(0, 1, 100)
 # print(x)
 
-from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder
+from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder, count_params
 from piedpiper import *
-import jax_dataloader as jdl
+# import jax_dataloader as jdl
 
 ## For reproducibility
 seed = 2026
 
 ## Dataloader hps
-k_shots = 100
-resolution = (32, 32)
+resolution = (128, 128)
+k_shots = int(np.prod(resolution) * 0.03)
 H, W, C = (*resolution, 3)
 
 data_folder="../../../Self-Mod/examples/celeb-a/data/"
@@ -27,20 +27,20 @@ shuffle = True
 num_workers = 24
 latent_chans = 32
 
-envs_batch_size = 1627
+envs_batch_size = 1627//10
 envs_batch_size_all = envs_batch_size
-num_batches = 1*100
+num_batches = 10*100
 
 init_lr = 1e-4
 sched_factor = 0.2
-nb_epochs = 1000
-print_every = 50
+nb_epochs = 100
+print_every = 5
 validate_every = 10
 eps = 1e-6  ## Small value to avoid division by zero
 
-meta_train = False
-# run_folder = None
-run_folder = "./runs/241101-013653-6Hours/"
+meta_train = True
+# run_folder = "./runs/241101-013653-6Hours/"
+run_folder = None
 
 
 #%%
@@ -124,7 +124,7 @@ axs[0].set_title("Target Set")
 img_fs = make_image(Xc, Yc, img_size=(*resolution, 3))
 axs[1].imshow(img_fs)
 axs[1].set_title("Context Set")
-plt.suptitle("Example target and context sets");
+plt.suptitle("Example target and context sets", y=1.05);
 
 
 #%%
@@ -194,10 +194,10 @@ def loss_fn(model, batch):
     # return losses.sum(axis=(1, 2)).mean()
     return losses.mean()
 
-
 ## Define the learner
 learner = Learner(model, loss_fn)
 
+print("Total number of learnable parameters:", count_params(model))
 print("Data context shape is:", dat_context.shape)
 
 #%%
