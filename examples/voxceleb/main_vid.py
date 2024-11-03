@@ -3,35 +3,35 @@
 %load_ext autoreload
 %autoreload 2
 
-from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder
+from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder, count_params
 from piedpiper import *
 
 ## For reproducibility
 seed = 2026
 
 ## Dataloader hps
-k_shots = 200
-resolution = (32, 32)
-T, H, W, C = (8, *resolution, 3)
+resolution = (128, 128)
+k_shots = int(np.prod(resolution) * 0.1)
+T, H, W, C = (20, *resolution, 3)
 
-data_folder="./data/"
+data_folder="../../data/"
 shuffle = True
-num_workers = 0
+num_workers = 24
 latent_chans = 32
 
-envs_batch_size = 1
+envs_batch_size = 12
 envs_batch_size_all = envs_batch_size
-num_batches = 4*1
+num_batches = 82//12
 
 init_lr = 5e-5
-nb_epochs = 1000
-print_every = 100
+nb_epochs = 10000
+print_every = 500
 validate_every = 100
 sched_factor = 1.0
 eps = 1e-6  ## Small value to avoid division by zero
 
 run_folder = None
-# run_folder = "./runs/241023-110210-Test/"
+# run_folder = "./"
 
 meta_train = True
 
@@ -65,7 +65,8 @@ train_dataset = VideoDataset(data_folder,
 train_dataloader = NumpyLoader(train_dataset, 
                                batch_size=envs_batch_size, 
                                shuffle=shuffle, 
-                               num_workers=num_workers)
+                               num_workers=num_workers,
+                               drop_last=False)
 
 ctx_videos, tgt_videos = next(iter(train_dataloader))
 vt = VisualTester(None)
@@ -248,7 +249,7 @@ else:
 # print("Training losses:", jnp.stack(trainer.train_losses))
 
 vt = VisualTester(trainer)
-vt.visualize_losses(run_folder, log_scale=False, ylim=1)
+vt.visualize_losses(run_folder+"losses.png", log_scale=False, ylim=1)
 
 test_dataset = VideoDataset(data_folder, 
                       data_split="test", 
@@ -256,25 +257,36 @@ test_dataset = VideoDataset(data_folder,
                       num_frames=T, 
                       resolution=resolution, 
                       order_pixels=False, 
-                      max_envs=envs_batch_size_all*num_batches,
+                      max_envs=envs_batch_size_all*1,
                       seed=seed)
 test_dataloader = NumpyLoader(test_dataset, 
                                batch_size=envs_batch_size, 
-                               shuffle=shuffle, 
+                               shuffle=False, 
                                num_workers=num_workers)
 
-ctx_videos, tgt_videos = next(iter(test_dataloader))
-plt_idx = 0
-(pred_video, _), _ = model.bootstrap_predict(tgt_videos[plt_idx])
-# (pred_video, _), _ = model.naive_predict(ctx_videos[plt_idx])
+# ctx_videos, tgt_videos = next(iter(test_dataloader))
+# plt_idx = 0
+# (pred_video, _), _ = learner.model.bootstrap_predict(tgt_videos[plt_idx])
+# # (pred_video, _), _ = model.naive_predict(ctx_videos[plt_idx])
 
-print("Context shape:", pred_video.shape, ctx_videos[plt_idx].shape)
+# print("Context shape:", pred_video.shape, ctx_videos[plt_idx].shape)
 
-vt.visualize_video_frames(tgt_videos[plt_idx], resolution, title="Target Set")
-vt.visualize_video_frames(ctx_videos[plt_idx], resolution, title="Context Set")
-vt.visualize_video_frames(pred_video, resolution, title="Prediction")
+# vt.visualize_video_frames(tgt_videos[plt_idx], resolution, title="Target Set", save_path=run_folder+"target_set.png")
+# vt.visualize_video_frames(ctx_videos[plt_idx], resolution, title="Context Set", save_path=run_folder+"context_set.png")
+# vt.visualize_video_frames(pred_video, resolution, title="Prediction", save_path=run_folder+"prediction.png")
 
 # plt.savefig(f"{run_folder}predictions.png")
+
+
+vt.visualize_videos(test_dataloader, 
+                    nb_envs=4, 
+                    save_path=run_folder+"sample_predictions_nobt.png", 
+                    bootstrap=False, 
+                    save_video=True, 
+                    video_prefix="sample_nobt")
+
+
+
 
 #%%
 try:

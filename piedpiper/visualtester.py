@@ -1,5 +1,6 @@
 from ._config import *
 from selfmod import make_image, interpolate_2D_image
+import imageio
 
 class VisualTester:
     def __init__(self, trainer):
@@ -23,7 +24,6 @@ class VisualTester:
 
         ## Make a twin axis for validation losses
         val_losses = self.trainer.val_losses
-        print(val_losses)
         if len(val_losses) > 0:
             ax2 = ax.twinx()
 
@@ -133,3 +133,140 @@ class VisualTester:
 
         if save_path is not None:
             fig.savefig(save_path, bbox_inches='tight')
+
+
+
+    def visualize_videos(self, dataloader, nb_envs=None, save_path=None, interp_method="linear", key=None, bootstrap=True, save_video=True, video_prefix="sample"):
+        """ Visualize a batch of videos from the dataloader: ctx, tgt, pred, interp """
+        if key is None:
+            key = jax.random.PRNGKey(time.time_ns())
+        img_shape = dataloader.dataset.context_sets.img_size
+        nb_frames = dataloader.dataset.context_sets.nb_frames
+
+        batch_size = dataloader.batch_size
+        if nb_envs < batch_size:
+            ctx_batch, tgt_batch = next(iter(dataloader))
+            ctx_batch = ctx_batch[:nb_envs]
+            tgt_batch = tgt_batch[:nb_envs]
+        else:
+            """Concatenate multiple batches"""
+            ctx_batch, tgt_batch = [], []
+            for _ in range(nb_envs//batch_size):
+                ctx, tgt = next(iter(dataloader))
+                ctx_batch.append(ctx)
+                tgt_batch.append(tgt)
+            ctx_batch = np.concatenate(ctx_batch, axis=0)
+            tgt_batch = np.concatenate(tgt_batch, axis=0)
+
+        tgt_videos = tgt_batch
+        ctx_videos = ctx_batch
+        if bootstrap:
+            (pred_videos, uq_videos), _ = eqx.filter_vmap(self.trainer.learner.model.bootstrap_predict)(tgt_videos)
+        else:
+            (pred_videos, uq_videos), _ = eqx.filter_vmap(self.trainer.learner.model.naive_predict)(ctx_videos)
+
+        def get_img(video, i, return_ints=False):
+            if video.ndim == 3:
+                xy, rgb = video[i, :, :2], video[i, :, 2:]
+                img = make_image(xy, rgb, img_size=img_shape)
+            else:
+                img = video[i]
+            img = np.clip(img, 0., 1.)
+            if return_ints:
+                img = (img*255).astype(np.uint8)
+            return img
+    
+        nb_vids_per_env = 6
+        fig, ax = plt.subplots(nb_vids_per_env*nb_envs, nb_frames+1, figsize=(2*(nb_frames+1), nb_vids_per_env*2*nb_envs))
+
+        for e in range(nb_envs):
+            tgt_video = tgt_videos[e]
+            ctx_video = ctx_videos[e]
+            pred_video = pred_videos[e]
+            uq_video = uq_videos[e]
+
+            ## In all columns of row (e*nb_vids_per_env+0, :), and print the environment number centered
+            ax[e*nb_vids_per_env, nb_frames//2].text(0.5, 0.5, f"Env {e}", fontsize=36, ha='center', va='top')
+
+            ax[e*nb_vids_per_env, 0].axis('off')
+            ax[e*nb_vids_per_env+1, 0].axis('off')
+            ax[e*nb_vids_per_env+2, 0].axis('off')
+            ax[e*nb_vids_per_env+3, 0].axis('off')
+            ax[e*nb_vids_per_env+4, 0].axis('off')
+            ax[e*nb_vids_per_env+5, 0].axis('off')
+            # if e==0:
+            ax[e*nb_vids_per_env+1, 0].text(0.5, 0.5, f"Target\nSet", fontsize=22, ha='center', va='center')
+            ax[e*nb_vids_per_env+2, 0].text(0.5, 0.5, f"Context\nSet", fontsize=22, ha='center', va='center')
+            ax[e*nb_vids_per_env+3, 0].text(0.5, 0.5, f"Prediction", fontsize=22, ha='center', va='center')
+            ax[e*nb_vids_per_env+4, 0].text(0.5, 0.5, f"Uncertainty", fontsize=22, ha='center', va='center')
+            ax[e*nb_vids_per_env+5, 0].text(0.5, 0.5, f"{interp_method.capitalize()}\nInterp.", fontsize=22, ha='center', va='center')
+
+            for i in range(1, nb_frames+1):
+
+                ax[e*nb_vids_per_env, i].axis('off')
+
+                ## The taget images at the top row
+                img_tgt = get_img(tgt_video, i-1)
+                ax[e*nb_vids_per_env+1, i].imshow(img_tgt)
+                ax[e*nb_vids_per_env+1, i].set_xticks([])
+                ax[e*nb_vids_per_env+1, i].set_yticks([])
+
+                ## The context images in the second row
+                img_ctx = get_img(ctx_video, i-1)
+                ax[e*nb_vids_per_env+2, i].imshow(img_ctx)
+                ax[e*nb_vids_per_env+2, i].set_xticks([])
+                ax[e*nb_vids_per_env+2, i].set_yticks([])
+
+                ## The prediction images in the third row
+                img_pred = get_img(pred_video, i-1)
+                ax[e*nb_vids_per_env+3, i].imshow(img_pred)
+                ax[e*nb_vids_per_env+3, i].set_xticks([])
+                ax[e*nb_vids_per_env+3, i].set_yticks([])
+
+                ## The uncertainty images in the fourth row
+                img_uq = get_img(uq_video, i-1)
+                ax[e*nb_vids_per_env+4, i].imshow(img_uq)
+                ax[e*nb_vids_per_env+4, i].set_xticks([])
+                ax[e*nb_vids_per_env+4, i].set_yticks([])
+
+                ## The interpolated images in the fifth row
+                img_interp = interpolate_2D_image(ctx_video[i-1,...,:2], ctx_video[i-1,...,2:], img_shape, method=interp_method)
+                ax[e*nb_vids_per_env+5, i].imshow(img_interp)
+                ax[e*nb_vids_per_env+5, i].set_xticks([])
+                ax[e*nb_vids_per_env+5, i].set_yticks([])
+
+                if e==nb_envs-1:
+                    ax[e*nb_vids_per_env+4, i].set_title(f"Frame {i}")
+
+
+        if save_path is not None:
+            fig.savefig(save_path, bbox_inches='tight')
+
+        if save_video:
+            # Save the video (for the very last environment only)
+            save_path_tgt = video_prefix+ "_tgt.mp4"
+            with imageio.get_writer(save_path_tgt, mode='I') as writer:
+                for i in range(nb_frames):
+                    writer.append_data(get_img(tgt_video, i, return_ints=True))
+
+            save_path_ctx = video_prefix + "_ctx.mp4"
+            with imageio.get_writer(save_path_ctx, mode='I') as writer:
+                for i in range(nb_frames):
+                    writer.append_data(get_img(ctx_video, i, return_ints=True))
+
+            save_path_pred = video_prefix + "_pred.mp4"
+            with imageio.get_writer(save_path_pred, mode='I') as writer:
+                for i in range(nb_frames):
+                    writer.append_data(get_img(pred_video, i, return_ints=True))
+            
+            save_path_uq = video_prefix + "_uq.mp4"
+            with imageio.get_writer(save_path_uq, mode='I') as writer:
+                for i in range(nb_frames):
+                    writer.append_data(get_img(uq_video, i, return_ints=True))
+
+            save_path_interp = video_prefix + "_interp.mp4"
+            with imageio.get_writer(save_path_interp, mode='I') as writer:
+                for i in range(nb_frames):
+                    int_img = interpolate_2D_image(ctx_video[i,...,:2], ctx_video[i,...,2:], img_shape, method=interp_method)*255
+                    int_img = int_img.astype(np.uint8)
+                    writer.append_data(int_img)
