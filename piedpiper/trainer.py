@@ -190,7 +190,8 @@ class Trainer:
             ys, _ = eqx.filter_vmap(eqx.filter_vmap(model.preprocess_channel_last))(tgt_data)  #ys shape: (B, T, H, W, C)
 
             # keys = jax.random.split(key, ctx_data.shape[0])
-            (mus, sigmas), ctx_vids = eqx.filter_vmap(model.naive_predict)(ctx_data)              ## mu, sigma shape: (B, T, H, W, C)
+            (mus, sigmas), ctx_vids = eqx.filter_vmap(model)(ctx_data)              ## mu, sigma shape: (B, T, H, W, C)
+            # (mus, sigmas), ctx_vids = eqx.filter_vmap(model.naive_predict)(ctx_data)              ## mu, sigma shape: (B, T, H, W, C)
             # (mus, sigmas), ctx_vids = eqx.filter_vmap(model.bootstrap_predict)(tgt_data)              ## mu, sigma shape: (B, T, H, W, C)
 
             if criterion == "NLL":

@@ -33,8 +33,8 @@ validate_every = 100
 sched_factor = 1.0
 eps = 1e-6  ## Small value to avoid division by zero
 
-run_folder = None
-# run_folder = "./241108-213626-Test"
+# run_folder = None
+run_folder = "./241108-213626-Test"
 
 meta_train = True
 
@@ -158,7 +158,7 @@ class Control(eqx.Module):
             # tau = jnp.array([tau])
             return jnp.interp(tau, ts, xs_, left="extrapolate", right="extrapolate").squeeze()
     
-        t = jnp.array([t])
+        t= jnp.array([t])
         grad_xs = grad_interp_img(t, xs).squeeze()        ## grad_xs shape: (C, H, W)
 
         ## We do r convolutions of grad_xs, each with a different kernel: 1 at a specific location and 0 elsewhere. This just places the neighring pixels in a line, ready for my special product
