@@ -235,8 +235,8 @@ class VisualTester:
                 ax[e*nb_vids_per_env+5, i].set_xticks([])
                 ax[e*nb_vids_per_env+5, i].set_yticks([])
 
-                if e==nb_envs-1:
-                    ax[e*nb_vids_per_env+4, i].set_title(f"Frame {i}")
+                if True:
+                    ax[e*nb_vids_per_env+1, i].set_title(f"Frame {i}")
 
 
         if save_path is not None:

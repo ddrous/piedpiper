@@ -1,7 +1,7 @@
 
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder, count_params
 from piedpiper import *
@@ -11,10 +11,10 @@ seed = 2026
 
 ## Dataloader hps
 resolution = (128, 128)
-k_shots = int(np.prod(resolution) * 0.1)
-T, H, W, C = (20, *resolution, 3)
+k_shots = int(np.prod(resolution) * 0.01)
+T, H, W, C = (50, *resolution, 3)
 
-data_folder="../../data/"
+data_folder="./data/"
 shuffle = True
 num_workers = 24
 latent_chans = 32
@@ -24,7 +24,7 @@ envs_batch_size_all = envs_batch_size
 num_batches = 82//12
 
 init_lr = 5e-5
-nb_epochs = 10000
+nb_epochs = 5000
 print_every = 500
 validate_every = 100
 sched_factor = 1.0
@@ -210,7 +210,8 @@ def loss_fn(model, batch):
     ys, _ = eqx.filter_vmap(eqx.filter_vmap(model.cell.preprocess_channel_last))(tgt_data)  #ys shape: (B, T, H, W, C)
 
     # keys = jax.random.split(key, ctx_data.shape[0])
-    (mus, sigmas), ctx_vids = eqx.filter_vmap(model.bootstrap_predict)(tgt_data)              ## mu, sigma shape: (B, T, H, W, C)
+    # (mus, sigmas), ctx_vids = eqx.filter_vmap(model.bootstrap_predict)(tgt_data)              ## mu, sigma shape: (B, T, H, W, C)
+    (mus, sigmas), ctx_vids = eqx.filter_vmap(model.naive_predict)(ctx_data)              ## mu, sigma shape: (B, T, H, W, C)
 
     losses = neg_log_likelihood(mus, sigmas, ys)
     return losses.mean()
@@ -258,7 +259,7 @@ test_dataset = VideoDataset(data_folder,
                       resolution=resolution, 
                       order_pixels=False, 
                       max_envs=envs_batch_size_all*1,
-                      seed=seed)
+                      seed=None)
 test_dataloader = NumpyLoader(test_dataset, 
                                batch_size=envs_batch_size, 
                                shuffle=False, 
@@ -283,7 +284,7 @@ vt.visualize_videos(test_dataloader,
                     save_path=run_folder+"sample_predictions_nobt.png", 
                     bootstrap=False, 
                     save_video=True, 
-                    video_prefix="sample_nobt")
+                    video_prefix=run_folder+"sample_nobt")
 
 
 

@@ -104,6 +104,8 @@ class Trainer:
 
         losses = []
 
+        start_time = time.time_ns()
+
         ## TODO: use tqdm for better progress bar
         for epoch in range(nb_epochs):
             start_time_step = time.perf_counter()
@@ -143,6 +145,8 @@ class Trainer:
         if save_path:
             self.save_trainer(save_path)
 
+        ## Print the total time taken for training in HH:MM:SS
+        print(f"\nTotal training time: {time.strftime('%H:%M:%S', time.gmtime((time.time_ns()-start_time)//10**9))}\n")
 
     def meta_test_img(self, dataloader, criterion="NLL"):
         """ Test the model using the provided dataloader """
@@ -183,10 +187,11 @@ class Trainer:
         @eqx.filter_jit
         def test_step(model, batch):
             ctx_data, tgt_data = batch
-            ys, _ = eqx.filter_vmap(eqx.filter_vmap(model.cell.preprocess_channel_last))(tgt_data)  #ys shape: (B, T, H, W, C)
+            ys, _ = eqx.filter_vmap(eqx.filter_vmap(model.preprocess_channel_last))(tgt_data)  #ys shape: (B, T, H, W, C)
 
             # keys = jax.random.split(key, ctx_data.shape[0])
-            (mus, sigmas), ctx_vids = eqx.filter_vmap(model.bootstrap_predict)(tgt_data)              ## mu, sigma shape: (B, T, H, W, C)
+            (mus, sigmas), ctx_vids = eqx.filter_vmap(model.naive_predict)(ctx_data)              ## mu, sigma shape: (B, T, H, W, C)
+            # (mus, sigmas), ctx_vids = eqx.filter_vmap(model.bootstrap_predict)(tgt_data)              ## mu, sigma shape: (B, T, H, W, C)
 
             if criterion == "NLL":
                 losses = neg_log_likelihood(mus, sigmas, ys)

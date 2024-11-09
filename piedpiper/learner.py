@@ -53,6 +53,25 @@ class Encoder(eqx.Module):
         h = self.conv2(Zc) / (h0)
         return jnp.concatenate([h0, h], axis=0)
 
+class Encoder2(eqx.Module):
+    """ Set encoder for on-the-grid images """
+
+    conv1: eqx.nn.Conv2d
+    conv2: eqx.nn.Conv2d
+
+    def __init__(self, in_chans, out_chans, kernel_size=3, *, key):
+        super().__init__()
+        keys = jax.random.split(key, 2)
+        self.conv1 = eqx.nn.Conv2d(1, 1, kernel_size, padding="same", key=keys[0])
+        self.conv2 = eqx.nn.Conv2d(in_chans, out_chans-1, kernel_size, padding="same", key=keys[1])
+
+    def __call__(self, Ic, Mc):
+        h0 = self.conv1(Mc)
+        Zc = Mc * Ic
+        h = self.conv2(Zc) / (h0)
+        return jnp.concatenate([h0, h], axis=0)
+
+
 
 class Decoder(eqx.Module):
     vnet: eqx.Module
