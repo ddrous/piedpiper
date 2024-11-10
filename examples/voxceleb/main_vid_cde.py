@@ -5,29 +5,29 @@
 
 from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder, count_params
 from piedpiper import *
-import jax.scipy as jsp
 from functools import partial
+# jax.config.update("jax_debug_nans", True)
 
 ## For reproducibility
 seed = 2024
 
 ## Dataloader hps
-resolution = (64, 64)
+resolution = (64, 48)
 k_shots = int(np.prod(resolution) * 0.1)
-T, H, W, C = (10, *resolution, 3)
-c, h, w = (3, 3, 3)     ## The window size for the vector field and control signal to interact !
+T, H, W, C = (32, resolution[1], resolution[0], 3)
+c, h, w = (3, 5, 5)     ## The window size for the vector field and control signal to interact !
 
 data_folder="./data/"
 shuffle = True
 num_workers = 24
-latent_chans = 24
+latent_chans = 32
 
 envs_batch_size = 12
 envs_batch_size_all = envs_batch_size
 num_batches = 82//12
 
 init_lr = 5e-5
-nb_epochs = 2500
+nb_epochs = 10000
 print_every = 10
 validate_every = 100
 sched_factor = 1.0
@@ -94,8 +94,9 @@ class VectorField(eqx.Module):
         self.img_shape = (C, H, W)
         self.window_shape = (c, h, w)
 
+        r = np.prod(self.window_shape)
         self.weights = VNet(input_shape=(2*C, H, W),    ## 2 because of the y is actually mu and sigma
-                        output_shape=(2*C*np.prod(self.window_shape), H, W), 
+                        output_shape=(2*C*(r + 1), H, W), 
                         levels=4, 
                         depth=8,
                         kernel_size=5,
@@ -110,14 +111,13 @@ class VectorField(eqx.Module):
 
     def __call__(self, y_mu, y_sigma):
         y = jnp.concatenate([y_mu, y_sigma], axis=0)    ## y shape: (2*C, H, W)
-        mu, sigma = jnp.split(self.weights(y), 2, axis=0)   ## mu of shape: (C*cxhxw, H, W)
+        mu, sigma = jnp.split(self.weights(y), 2, axis=0)   ## mu of shape: (C*(cxhxw+1), H, W)
 
-        ## Reshape mu and sigma to (cxhxw, C, H, W)
-        mu = mu.reshape((np.prod(self.window_shape), C, H, W))
-        sigma = sigma.reshape((np.prod(self.window_shape), C, H, W))
+        ## Reshape mu and sigma to (cxhxw+1, C, H, W)
+        mu = mu.reshape((np.prod(self.window_shape)+1, C, H, W))
+        sigma = sigma.reshape((np.prod(self.window_shape)+1, C, H, W))
 
         return mu, sigma
-
 
 
 class Control(eqx.Module):
@@ -129,7 +129,7 @@ class Control(eqx.Module):
     def __init__(self, C, H, W, c, h, w, key=None):
         self.img_shape = (C, H, W)
         self.window_shape = (c, h, w)
-        self.weights = SimpleEncoder(in_chans=C+1, out_chans=C, key=key)
+        self.weights = SimpleEncoder(in_chans=C, out_chans=C, key=key)
 
     def __call__(self, t, ts, xs, masks):
         ## xs = ctx_frames of shape: (T, C, H, W) - although some are zeros
@@ -137,12 +137,13 @@ class Control(eqx.Module):
 
         T, C, H, W = xs.shape
 
-        ## Add the time channel to the xs (CDE need these)
-        ts_3d = jnp.repeat(ts[:, None], H*W, axis=1).reshape((T, 1, H, W))
-        xs = jnp.concatenate([xs, ts_3d], axis=1)
-
         ## Encode every frame independently with vmap - skip this and see the result
+        print("Shapes of ts, xs, masks:", ts.shape, xs.shape, masks.shape)
         xs = eqx.filter_vmap(self.weights)(xs, masks)
+
+        # ## Add the time channel to the xs (CDE need these)
+        # ts_3d = jnp.repeat(ts[:, None], H*W, axis=1).reshape((T, 1, H, W))
+        # xs = jnp.concatenate([ts_3d, xs], axis=1)   ## xs shape: (T, C+1, H, W) - time is the first channel
 
         ## Put the time dimension last and channel last
         xs = xs.transpose(1, 2, 3, 0)
@@ -151,15 +152,21 @@ class Control(eqx.Module):
         @eqx.filter_vmap(in_axes=(None, 0))
         @eqx.filter_vmap(in_axes=(None, 0))
         @eqx.filter_vmap(in_axes=(None, 0))
-        @eqx.filter_jacfwd ## @eqx.filter_grad
+        @partial(jax.grad)      # @eqx.filter_jacfwd ## @eqx.filter_grad
         def grad_interp_img(tau, xs_):
             # print("Shapes of ts, ys, t:", ts.shape, ys.shape, t.shape)
             # return jnp.interp(tau.squeeze(), ts, xs, left="extrapolate", right="extrapolate").squeeze()
             # tau = jnp.array([tau])
+            # return jnp.interp(tau, ts, xs_, left="extrapolate", right="extrapolate").squeeze()
             return jnp.interp(tau, ts, xs_, left="extrapolate", right="extrapolate").squeeze()
     
-        t = jnp.array([t])
+        # t = jnp.array([t])
         grad_xs = grad_interp_img(t, xs).squeeze()        ## grad_xs shape: (C, H, W)
+
+        # # Get change in time for later on - in the first channel
+        delta_t = jax.grad(jnp.interp)(t, ts, ts, left="extrapolate", right="extrapolate")
+        # delta_t = grad_xs[0, 0, 0]
+        # grad_xs = grad_xs[1:]    ## grad_xs shape: (C, H, W)
 
         ## We do r convolutions of grad_xs, each with a different kernel: 1 at a specific location and 0 elsewhere. This just places the neighring pixels in a line, ready for my special product
         r = np.prod(self.window_shape)
@@ -169,7 +176,13 @@ class Control(eqx.Module):
             kernel_3d = kernel_1d.reshape(self.window_shape)
             return jax.scipy.signal.convolve(grad_xs, kernel_3d, mode="same")
 
-        return convolve(ones_hots)      ## shape: (r, C, H, W)
+        grad_xs = convolve(ones_hots)      ## shape: (r, C, H, W)
+
+        ## Add time t to the grad_xs along the leading axis r
+        delta_t = jnp.ones((1, C, H, W)) * delta_t              ## shape: (1, C, H, W)
+        grad_xs = jnp.concatenate([delta_t, grad_xs], axis=0)    ## shape: (r+1, C, H, W)
+
+        return grad_xs
 
 
 
@@ -191,17 +204,16 @@ class ODEFunc(eqx.Module):
         ### We normally work with our data as (H, W, C). Let's make sure every input is channel first
         y = y.transpose(2, 0, 1)    ## y shape: (2*C, H, W)
         xs = xs.transpose(0, 3, 1, 2)    ## xs shape: (T, C, H, W)
-        masks = masks.transpose(0, 3, 2, 1)    ## masks shape: (T, 1, H, W)
+        masks = masks.transpose(0, 3, 1, 2)    ## masks shape: (T, 1, H, W)
 
         mu, sigma = jnp.split(y, 2, axis=0)                     ## mu, sigma shape: (C, H, W)
-        mu_big, sigma_big = self.vector_field(mu, sigma)        ## mu_big, sigma_big shape: (cxhxw, C, H, W)
-        dx_dt_big = self.control(t, ts, xs, masks)                     ## dx_dt_big shape: (cxhxw, C, H, W)
+        mu_big, sigma_big = self.vector_field(mu, sigma)        ## mu_big, sigma_big shape: (cxhxw+1, C, H, W)
+        dx_dt_big = self.control(t, ts, xs, masks)                     ## dx_dt_big shape: (cxhxw+1, C, H, W)
 
         mu = jnp.sum(mu_big * dx_dt_big, axis=0)    ## mu shape: (C, H, W)
         sigma = jnp.sum(sigma_big * dx_dt_big, axis=0)    ## sigma shape: (C, H, W)
 
         next_y = jnp.concatenate([mu, sigma], axis=0)
-
 
         return next_y.transpose(1, 2, 0)    ## next_y shape: (H, W, 2*C)
 
@@ -213,7 +225,7 @@ class Model(eqx.Module):
 
     def __init__(self, C, H, W, c, h, w, latent_chans, key=None):
         keys = jax.random.split(key, 2)
-        self.init_cond = ConvCNP(C, H, W, latent_chans, key=keys[0])
+        self.init_cond = ConvCNP(C, H, W, latent_chans, epsilon=eps, key=keys[0])
         self.ode_func = ODEFunc(C, H, W, c, h, w, key=keys[1])
 
     def preprocess(self, XY):
@@ -234,13 +246,13 @@ class Model(eqx.Module):
 
         sol = diffrax.diffeqsolve(
                 terms=diffrax.ODETerm(self.ode_func),
-                solver=diffrax.Dopri5(),
+                solver=diffrax.Euler(),
                 args=(ts, xs, masks),
                 t0=ts[0],
                 t1=ts[-1],
                 dt0=ts[1]-ts[0],
                 y0=y0,
-                stepsize_controller=diffrax.PIDController(rtol=1e-3, atol=1e-6, dtmin=None),
+                # stepsize_controller=diffrax.PIDController(rtol=1e-2, atol=1e-4, dtmin=None),
                 saveat=diffrax.SaveAt(ts=ts),
                 adjoint=diffrax.RecursiveCheckpointAdjoint(),
                 max_steps=4096*1,
@@ -248,6 +260,7 @@ class Model(eqx.Module):
             )
 
         mus, sigmas = jnp.split(sol.ys, 2, axis=-1)    ## mus, sigmas shape: (T, H, W, C)
+        sigmas = self.init_cond.positivity(sigmas)
 
         return (mus, sigmas), xs
 
@@ -270,7 +283,7 @@ learner = Learner(model, loss_fn, images=False)
 total_steps = nb_epochs*train_dataloader.num_batches
 bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
 sched = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
-opt = optax.chain(optax.clip(1e-0), optax.adam(sched))
+opt = optax.chain(optax.clip(1e2), optax.adam(sched))
 
 trainer = Trainer(learner, opt)
 

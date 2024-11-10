@@ -54,7 +54,7 @@ class Encoder(eqx.Module):
         return jnp.concatenate([h0, h], axis=0)
 
 class SimpleEncoder(eqx.Module):
-    """ Set encoder for on-the-grid images """
+    """ Set encoder for _normalised_ convolution - with time """
 
     conv1: eqx.nn.Conv2d
     conv2: eqx.nn.Conv2d

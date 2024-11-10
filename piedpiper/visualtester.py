@@ -163,7 +163,8 @@ class VisualTester:
         if bootstrap:
             (pred_videos, uq_videos), _ = eqx.filter_vmap(self.trainer.learner.model.bootstrap_predict)(tgt_videos)
         else:
-            (pred_videos, uq_videos), _ = eqx.filter_vmap(self.trainer.learner.model.naive_predict)(ctx_videos)
+            # (pred_videos, uq_videos), _ = eqx.filter_vmap(self.trainer.learner.model.naive_predict)(ctx_videos)
+            (pred_videos, uq_videos), _ = eqx.filter_vmap(self.trainer.learner.model)(ctx_videos)
 
         def get_img(video, i, return_ints=False):
             if video.ndim == 3:

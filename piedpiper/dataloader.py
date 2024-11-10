@@ -142,6 +142,7 @@ class Vox2Dataset(Dataset):
         self.input_dim = 2
         self.output_dim = 3
         self.img_size = (*resolution, self.output_dim)
+        # self.img_size = (resolution[1], resolution[0], self.output_dim)
         self.order_pixels = order_pixels
 
         self.data_path = data_path
@@ -216,6 +217,9 @@ class Vox2Dataset(Dataset):
         return np.stack(video, axis=0)
 
     def sample_img_pixels(self, img) -> Tuple[np.ndarray, jnp.ndarray]:
+        ## img is a video frame with shape (H, W, C), but this method works in the classical (W, H, C) format
+        img = img.transpose(1, 0, 2)
+
         total_pixels = self.img_size[0] * self.img_size[1]
 
         if self.order_pixels:

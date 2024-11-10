@@ -8,349 +8,375 @@ Available devices: [CudaDevice(id=0)]
 
 Jax version: 0.4.35
 Available devices: [CudaDevice(id=0)]
-Created a new run folder at: ./runs/241108-213626/
+Created a new run folder at: ./runs/241110-003100/
 Completed copied scripts 
-Created a new adaptation folder at: ./runs/241108-213626/adapt/
+Created a new adaptation folder at: ./runs/241110-003100/adapt/
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-21:36:39      Epoch:   0      Loss: 0.94151372      Time/Epoch(s): 7.9583
+/home/gb21553/Projects/Self-Mod/selfmod/learner.py:1387: UserWarning: A JAX array is being set as static! This can result in unexpected behavior and is usually a mistake to do.
+  self.final_conv = eqx.nn.Conv2d(depth, output_shape[0], 1, padding="SAME", key=f_key)
+00:31:19      Epoch:   0      Loss: 380796507747516416.00000000      Time/Epoch(s): 13.8976
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-    Validation loss: 0.9412612318992615
-    Best model saved at epoch 0 with validation loss: 0.9412612318992615
+    Validation loss: 1.638477410074624e+16
+    Best model saved at epoch 0 with validation loss: 1.638477410074624e+16
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-21:37:23      Epoch:  10      Loss: 0.88865185      Time/Epoch(s): 4.0106
-21:38:03      Epoch:  20      Loss: 0.75271797      Time/Epoch(s): 3.9861
-21:38:44      Epoch:  30      Loss: 0.67973256      Time/Epoch(s): 4.0472
-21:39:24      Epoch:  40      Loss: 0.63426495      Time/Epoch(s): 4.0169
-21:40:05      Epoch:  50      Loss: 0.60968369      Time/Epoch(s): 4.1114
-21:40:45      Epoch:  60      Loss: 0.59333670      Time/Epoch(s): 4.0251
-21:41:25      Epoch:  70      Loss: 0.57843953      Time/Epoch(s): 3.9536
-21:42:06      Epoch:  80      Loss: 0.58000636      Time/Epoch(s): 4.0130
-21:42:46      Epoch:  90      Loss: 0.56509781      Time/Epoch(s): 3.9806
-21:43:26      Epoch: 100      Loss: 0.78223646      Time/Epoch(s): 4.0220
-    Validation loss: 0.7249710559844971
-    Best model saved at epoch 100 with validation loss: 0.7249710559844971
+00:32:02      Epoch:  10      Loss: 17409693696.00000000      Time/Epoch(s): 4.0579
+00:32:43      Epoch:  20      Loss: 858143104.00000000      Time/Epoch(s): 4.0862
+00:33:23      Epoch:  30      Loss: 163585184.00000000      Time/Epoch(s): 4.0453
+00:34:04      Epoch:  40      Loss: 125624472.00000000      Time/Epoch(s): 4.1077
+00:34:45      Epoch:  50      Loss: 34446148.00000000      Time/Epoch(s): 4.1125
+00:35:26      Epoch:  60      Loss: 39904288.00000000      Time/Epoch(s): 4.0611
+00:36:07      Epoch:  70      Loss: 2782797568.00000000      Time/Epoch(s): 4.1060
+00:36:48      Epoch:  80      Loss: 25216532.00000000      Time/Epoch(s): 4.0673
+00:37:29      Epoch:  90      Loss: 32781752.00000000      Time/Epoch(s): 4.1037
+00:38:09      Epoch: 100      Loss: 4457927.00000000      Time/Epoch(s): 4.0733
+    Validation loss: 5134647.0
+    Best model saved at epoch 100 with validation loss: 5134647.0
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-21:44:11      Epoch: 110      Loss: 0.62699056      Time/Epoch(s): 4.0614
-21:44:51      Epoch: 120      Loss: 0.60629737      Time/Epoch(s): 4.0048
-21:45:32      Epoch: 130      Loss: 0.59106773      Time/Epoch(s): 4.0051
-21:46:12      Epoch: 140      Loss: 0.58101451      Time/Epoch(s): 4.0379
-21:46:52      Epoch: 150      Loss: 0.90308422      Time/Epoch(s): 4.1359
-21:47:33      Epoch: 160      Loss: 0.93002599      Time/Epoch(s): 4.1922
-21:48:13      Epoch: 170      Loss: 0.93391669      Time/Epoch(s): 4.0312
-21:48:54      Epoch: 180      Loss: 0.92531717      Time/Epoch(s): 4.0573
-21:49:34      Epoch: 190      Loss: 0.86511606      Time/Epoch(s): 4.0268
-21:50:15      Epoch: 200      Loss: 0.83761710      Time/Epoch(s): 3.9919
-    Validation loss: 0.8757180571556091
+00:38:52      Epoch: 110      Loss: 968364.68750000      Time/Epoch(s): 4.0498
+00:39:33      Epoch: 120      Loss: 1697668.50000000      Time/Epoch(s): 4.1009
+00:40:13      Epoch: 130      Loss: 987302.87500000      Time/Epoch(s): 4.0403
+00:40:54      Epoch: 140      Loss: 8647.31835938      Time/Epoch(s): 4.0799
+00:41:35      Epoch: 150      Loss: 567948.12500000      Time/Epoch(s): 4.1062
+00:42:16      Epoch: 160      Loss: 108723.99218750      Time/Epoch(s): 4.0650
+00:42:57      Epoch: 170      Loss: 45265.28906250      Time/Epoch(s): 4.0744
+00:43:37      Epoch: 180      Loss: 2543.46679688      Time/Epoch(s): 4.0267
+00:44:18      Epoch: 190      Loss: 20022.30664062      Time/Epoch(s): 4.0559
+00:44:59      Epoch: 200      Loss: 74.03787231      Time/Epoch(s): 4.0586
+    Validation loss: 24841.53125
+    Best model saved at epoch 200 with validation loss: 24841.53125
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-21:50:58      Epoch: 210      Loss: 0.82569182      Time/Epoch(s): 4.0362
-21:51:39      Epoch: 220      Loss: 0.80870640      Time/Epoch(s): 4.0292
-21:52:19      Epoch: 230      Loss: 0.80047941      Time/Epoch(s): 4.0280
-21:53:00      Epoch: 240      Loss: 0.88432783      Time/Epoch(s): 4.0154
-21:53:40      Epoch: 250      Loss: 0.89365000      Time/Epoch(s): 4.0564
-21:54:20      Epoch: 260      Loss: 0.90727562      Time/Epoch(s): 4.0475
-21:55:01      Epoch: 270      Loss: 0.91908401      Time/Epoch(s): 4.0236
-21:55:41      Epoch: 280      Loss: 0.97315758      Time/Epoch(s): 4.0622
-21:56:22      Epoch: 290      Loss: 0.93260592      Time/Epoch(s): 3.9630
-21:57:02      Epoch: 300      Loss: 0.94561404      Time/Epoch(s): 4.0474
-    Validation loss: 0.9770998954772949
+00:45:42      Epoch: 210      Loss: 33.50165939      Time/Epoch(s): 4.0679
+00:46:23      Epoch: 220      Loss: 28.64277458      Time/Epoch(s): 4.0758
+00:47:04      Epoch: 230      Loss: 107.96788025      Time/Epoch(s): 4.0723
+00:47:44      Epoch: 240      Loss: 17.40891266      Time/Epoch(s): 4.1130
+00:48:25      Epoch: 250      Loss: 4.98452663      Time/Epoch(s): 4.0446
+00:49:06      Epoch: 260      Loss: 2.52072954      Time/Epoch(s): 4.0629
+00:49:47      Epoch: 270      Loss: 1.80572689      Time/Epoch(s): 4.0819
+00:50:28      Epoch: 280      Loss: 1.79699159      Time/Epoch(s): 4.1256
+00:51:09      Epoch: 290      Loss: 2.81318045      Time/Epoch(s): 4.0874
+00:51:49      Epoch: 300      Loss: 1.39985967      Time/Epoch(s): 4.0863
+    Validation loss: 1.3787851333618164
+    Best model saved at epoch 300 with validation loss: 1.3787851333618164
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-21:57:46      Epoch: 310      Loss: 1.10170388      Time/Epoch(s): 4.2871
-21:58:27      Epoch: 320      Loss: 0.93544912      Time/Epoch(s): 4.0991
-21:59:07      Epoch: 330      Loss: 0.93092883      Time/Epoch(s): 4.0059
-21:59:47      Epoch: 340      Loss: 1.06322324      Time/Epoch(s): 4.0023
-22:00:28      Epoch: 350      Loss: 0.99356335      Time/Epoch(s): 4.0026
-22:01:08      Epoch: 360      Loss: 0.93364263      Time/Epoch(s): 3.9968
-22:01:48      Epoch: 370      Loss: 0.92447472      Time/Epoch(s): 3.9969
-22:02:29      Epoch: 380      Loss: 0.93252653      Time/Epoch(s): 4.0668
-22:03:10      Epoch: 390      Loss: 1.00868404      Time/Epoch(s): 4.0772
-22:03:50      Epoch: 400      Loss: 0.93148583      Time/Epoch(s): 4.0673
-    Validation loss: 0.9284462928771973
+00:52:33      Epoch: 310      Loss: 1.32201695      Time/Epoch(s): 4.1092
+00:53:14      Epoch: 320      Loss: 1.28354609      Time/Epoch(s): 4.0102
+00:53:54      Epoch: 330      Loss: 1.24887884      Time/Epoch(s): 4.0925
+00:54:35      Epoch: 340      Loss: 1.23524308      Time/Epoch(s): 4.0657
+00:55:16      Epoch: 350      Loss: 1.21722913      Time/Epoch(s): 4.1039
+00:55:57      Epoch: 360      Loss: 1.24642229      Time/Epoch(s): 4.1649
+00:56:38      Epoch: 370      Loss: 1.21248221      Time/Epoch(s): 4.1083
+00:57:19      Epoch: 380      Loss: 1.16217506      Time/Epoch(s): 4.1111
+00:58:00      Epoch: 390      Loss: 1.19741857      Time/Epoch(s): 3.9946
+00:58:41      Epoch: 400      Loss: 1.14509547      Time/Epoch(s): 4.1417
+    Validation loss: 1.1399264335632324
+    Best model saved at epoch 400 with validation loss: 1.1399264335632324
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-22:04:34      Epoch: 410      Loss: 0.93251026      Time/Epoch(s): 4.0224
-22:05:15      Epoch: 420      Loss: 0.93098843      Time/Epoch(s): 4.0346
-22:05:55      Epoch: 430      Loss: 0.92869443      Time/Epoch(s): 4.0779
-22:06:36      Epoch: 440      Loss: 0.91239017      Time/Epoch(s): 4.0424
-22:07:16      Epoch: 450      Loss: 0.91971540      Time/Epoch(s): 4.1397
-22:07:57      Epoch: 460      Loss: 0.91888225      Time/Epoch(s): 4.1069
-22:08:37      Epoch: 470      Loss: 0.92309922      Time/Epoch(s): 4.0817
-22:09:18      Epoch: 480      Loss: 0.93461192      Time/Epoch(s): 3.9994
-22:09:59      Epoch: 490      Loss: 0.93189538      Time/Epoch(s): 3.9898
-22:10:39      Epoch: 500      Loss: 0.92521876      Time/Epoch(s): 4.0932
-    Validation loss: 0.9191896319389343
+00:59:24      Epoch: 410      Loss: 1.12792802      Time/Epoch(s): 4.1449
+01:00:04      Epoch: 420      Loss: 1.12385154      Time/Epoch(s): 4.0466
+01:00:45      Epoch: 430      Loss: 1.11764193      Time/Epoch(s): 3.9781
+01:01:26      Epoch: 440      Loss: 1.11570907      Time/Epoch(s): 4.0614
+01:02:07      Epoch: 450      Loss: 1.10600448      Time/Epoch(s): 4.0853
+01:02:48      Epoch: 460      Loss: 1.09694839      Time/Epoch(s): 4.0135
+01:03:29      Epoch: 470      Loss: 1.09048545      Time/Epoch(s): 4.0745
+01:04:10      Epoch: 480      Loss: 1.09387529      Time/Epoch(s): 4.1132
+01:04:51      Epoch: 490      Loss: 1.18129468      Time/Epoch(s): 4.0590
+01:05:32      Epoch: 500      Loss: 1.09206629      Time/Epoch(s): 4.0287
+    Validation loss: 1.081864595413208
+    Best model saved at epoch 500 with validation loss: 1.081864595413208
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-22:11:23      Epoch: 510      Loss: 0.93907231      Time/Epoch(s): 4.0671
-22:12:04      Epoch: 520      Loss: 0.94279277      Time/Epoch(s): 4.0964
-22:12:44      Epoch: 530      Loss: 0.92175841      Time/Epoch(s): 3.9902
-22:13:25      Epoch: 540      Loss: 0.91903257      Time/Epoch(s): 3.9809
-22:14:05      Epoch: 550      Loss: 0.94176167      Time/Epoch(s): 4.0808
-22:14:46      Epoch: 560      Loss: 0.92944473      Time/Epoch(s): 4.0518
-22:15:27      Epoch: 570      Loss: 0.92483532      Time/Epoch(s): 4.0143
-22:16:07      Epoch: 580      Loss: 0.93209809      Time/Epoch(s): 4.0136
-22:16:48      Epoch: 590      Loss: 0.93543005      Time/Epoch(s): 4.0067
-22:17:28      Epoch: 600      Loss: 0.92177171      Time/Epoch(s): 4.0902
-    Validation loss: 0.9240055084228516
+01:06:15      Epoch: 510      Loss: 35296.09765625      Time/Epoch(s): 4.0830
+01:06:56      Epoch: 520      Loss: 9563.93554688      Time/Epoch(s): 4.1397
+01:07:37      Epoch: 530      Loss: 1.06455386      Time/Epoch(s): 4.1077
+01:08:17      Epoch: 540      Loss: 254924.17187500      Time/Epoch(s): 4.1056
+01:08:58      Epoch: 550      Loss: 1.08764005      Time/Epoch(s): 4.1191
+01:09:39      Epoch: 560      Loss: 1.09539032      Time/Epoch(s): 4.1007
+01:10:20      Epoch: 570      Loss: 1.08651900      Time/Epoch(s): 4.1090
+01:11:01      Epoch: 580      Loss: 1.06475317      Time/Epoch(s): 4.0166
+01:11:41      Epoch: 590      Loss: 1.05981660      Time/Epoch(s): 4.0576
+01:12:22      Epoch: 600      Loss: 1.05624402      Time/Epoch(s): 4.0377
+    Validation loss: 1.0570616722106934
+    Best model saved at epoch 600 with validation loss: 1.0570616722106934
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-22:18:12      Epoch: 610      Loss: 0.91694510      Time/Epoch(s): 4.0448
-22:18:53      Epoch: 620      Loss: 0.92443049      Time/Epoch(s): 3.9910
-22:19:33      Epoch: 630      Loss: 0.92717743      Time/Epoch(s): 4.0656
-22:20:14      Epoch: 640      Loss: 0.91841257      Time/Epoch(s): 4.0856
-22:20:54      Epoch: 650      Loss: 0.92650068      Time/Epoch(s): 4.2257
-22:21:35      Epoch: 660      Loss: 0.93586457      Time/Epoch(s): 4.0742
-22:22:15      Epoch: 670      Loss: 0.92176932      Time/Epoch(s): 4.0377
-22:22:56      Epoch: 680      Loss: 0.91683382      Time/Epoch(s): 4.0247
-22:23:36      Epoch: 690      Loss: 0.94951367      Time/Epoch(s): 4.0330
-22:24:17      Epoch: 700      Loss: 0.92983758      Time/Epoch(s): 4.0030
-    Validation loss: 0.9313313364982605
+01:13:06      Epoch: 610      Loss: 1.05032670      Time/Epoch(s): 4.0967
+01:13:46      Epoch: 620      Loss: 1.04784131      Time/Epoch(s): 4.0224
+01:14:27      Epoch: 630      Loss: 1.04124844      Time/Epoch(s): 4.0751
+01:15:08      Epoch: 640      Loss: 1.04419529      Time/Epoch(s): 4.0698
+01:15:49      Epoch: 650      Loss: 1.04248309      Time/Epoch(s): 4.0559
+01:16:30      Epoch: 660      Loss: 1.09973931      Time/Epoch(s): 4.1198
+01:17:11      Epoch: 670      Loss: 1.06216836      Time/Epoch(s): 4.0614
+01:17:52      Epoch: 680      Loss: 1.03004110      Time/Epoch(s): 4.0730
+01:18:33      Epoch: 690      Loss: 1.03530824      Time/Epoch(s): 4.0921
+01:19:14      Epoch: 700      Loss: 1.02566051      Time/Epoch(s): 4.2890
+    Validation loss: 1.0235068798065186
+    Best model saved at epoch 700 with validation loss: 1.0235068798065186
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-22:25:01      Epoch: 710      Loss: 0.92721474      Time/Epoch(s): 4.0129
-22:25:42      Epoch: 720      Loss: 1.22144198      Time/Epoch(s): 3.9994
-22:26:22      Epoch: 730      Loss: 1.18928456      Time/Epoch(s): 4.0809
-22:27:03      Epoch: 740      Loss: 0.93242306      Time/Epoch(s): 4.0284
-22:27:43      Epoch: 750      Loss: 0.93279552      Time/Epoch(s): 4.0073
-22:28:24      Epoch: 760      Loss: 0.97549903      Time/Epoch(s): 4.0215
-22:29:04      Epoch: 770      Loss: 0.93392706      Time/Epoch(s): 4.0694
-22:29:45      Epoch: 780      Loss: 0.93239921      Time/Epoch(s): 4.0394
-22:30:25      Epoch: 790      Loss: 0.95606554      Time/Epoch(s): 4.0948
-22:31:06      Epoch: 800      Loss: 0.95009029      Time/Epoch(s): 4.0820
-    Validation loss: 0.9340076446533203
+01:19:57      Epoch: 710      Loss: 1.02026200      Time/Epoch(s): 4.1333
+01:20:38      Epoch: 720      Loss: 1.01864302      Time/Epoch(s): 4.1004
+01:21:19      Epoch: 730      Loss: 1.01554561      Time/Epoch(s): 4.2608
+01:22:00      Epoch: 740      Loss: 1.01430905      Time/Epoch(s): 4.0808
+01:22:41      Epoch: 750      Loss: 1.01150489      Time/Epoch(s): 4.1334
+01:23:22      Epoch: 760      Loss: 1.00970113      Time/Epoch(s): 4.0531
+01:24:03      Epoch: 770      Loss: 1.01346016      Time/Epoch(s): 4.0897
+01:24:44      Epoch: 780      Loss: 1.00555015      Time/Epoch(s): 4.0805
+01:25:25      Epoch: 790      Loss: 1.00359607      Time/Epoch(s): 4.1120
+01:26:06      Epoch: 800      Loss: 1.00143754      Time/Epoch(s): 4.1029
+    Validation loss: 1.0011123418807983
+    Best model saved at epoch 800 with validation loss: 1.0011123418807983
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-22:31:50      Epoch: 810      Loss: 0.93274462      Time/Epoch(s): 4.0198
-22:32:31      Epoch: 820      Loss: 0.93268192      Time/Epoch(s): 4.2380
-22:33:11      Epoch: 830      Loss: 0.95529842      Time/Epoch(s): 4.0207
-22:33:52      Epoch: 840      Loss: 0.93722600      Time/Epoch(s): 4.0554
-22:34:32      Epoch: 850      Loss: 0.93550873      Time/Epoch(s): 4.0796
-22:35:13      Epoch: 860      Loss: 0.93471831      Time/Epoch(s): 4.0733
-22:35:54      Epoch: 870      Loss: 0.93395078      Time/Epoch(s): 4.0337
-22:36:34      Epoch: 880      Loss: 0.93256038      Time/Epoch(s): 4.0679
-22:37:15      Epoch: 890      Loss: 0.93161333      Time/Epoch(s): 4.0491
-22:37:55      Epoch: 900      Loss: 0.93120879      Time/Epoch(s): 4.0662
-    Validation loss: 0.9345839023590088
+01:26:49      Epoch: 810      Loss: 0.99959916      Time/Epoch(s): 4.0964
+01:27:30      Epoch: 820      Loss: 0.99893898      Time/Epoch(s): 4.1136
+01:28:11      Epoch: 830      Loss: 0.99658489      Time/Epoch(s): 4.0845
+01:28:52      Epoch: 840      Loss: 0.99526417      Time/Epoch(s): 4.0917
+01:29:33      Epoch: 850      Loss: 0.99473405      Time/Epoch(s): 4.0527
+01:30:14      Epoch: 860      Loss: 0.99243039      Time/Epoch(s): 4.1185
+01:30:55      Epoch: 870      Loss: 0.99114299      Time/Epoch(s): 4.0607
+01:31:36      Epoch: 880      Loss: 0.98946178      Time/Epoch(s): 4.1094
+01:32:17      Epoch: 890      Loss: 0.98835725      Time/Epoch(s): 4.0783
+01:32:58      Epoch: 900      Loss: 0.98851818      Time/Epoch(s): 4.0847
+    Validation loss: 0.9872316718101501
+    Best model saved at epoch 900 with validation loss: 0.9872316718101501
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-22:38:39      Epoch: 910      Loss: 0.92709780      Time/Epoch(s): 4.0793
-22:39:20      Epoch: 920      Loss: 0.93129128      Time/Epoch(s): 4.0486
-22:40:00      Epoch: 930      Loss: 0.91986942      Time/Epoch(s): 4.0456
-22:40:40      Epoch: 940      Loss: 0.93022847      Time/Epoch(s): 4.1090
-22:41:21      Epoch: 950      Loss: 0.91896462      Time/Epoch(s): 4.2885
-22:42:02      Epoch: 960      Loss: 0.92206085      Time/Epoch(s): 4.0708
-22:42:42      Epoch: 970      Loss: 0.92402101      Time/Epoch(s): 4.1024
-22:43:23      Epoch: 980      Loss: 0.91264033      Time/Epoch(s): 3.9770
-22:44:03      Epoch: 990      Loss: 0.92455471      Time/Epoch(s): 4.1078
-22:44:44      Epoch: 1000      Loss: 0.91559148      Time/Epoch(s): 4.0556
-    Validation loss: 0.9201480150222778
+01:33:41      Epoch: 910      Loss: 0.98649168      Time/Epoch(s): 4.0059
+01:34:22      Epoch: 920      Loss: 0.98501313      Time/Epoch(s): 4.1073
+01:35:03      Epoch: 930      Loss: 0.98437285      Time/Epoch(s): 4.1387
+01:35:44      Epoch: 940      Loss: 0.98292136      Time/Epoch(s): 4.0996
+01:36:25      Epoch: 950      Loss: 0.98277390      Time/Epoch(s): 4.1792
+01:37:06      Epoch: 960      Loss: 0.98175788      Time/Epoch(s): 4.1023
+01:37:47      Epoch: 970      Loss: 0.98169518      Time/Epoch(s): 4.0765
+01:38:28      Epoch: 980      Loss: 0.97992861      Time/Epoch(s): 4.0977
+01:39:09      Epoch: 990      Loss: 0.97930562      Time/Epoch(s): 4.0931
+01:39:50      Epoch: 1000      Loss: 0.97883940      Time/Epoch(s): 4.0887
+    Validation loss: 0.9784871339797974
+    Best model saved at epoch 1000 with validation loss: 0.9784871339797974
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-22:45:28      Epoch: 1010      Loss: 0.89932811      Time/Epoch(s): 4.0278
-22:46:08      Epoch: 1020      Loss: 0.90030211      Time/Epoch(s): 4.1301
-22:46:49      Epoch: 1030      Loss: 0.90185428      Time/Epoch(s): 4.0510
-22:47:30      Epoch: 1040      Loss: 0.89081591      Time/Epoch(s): 4.0812
-22:48:10      Epoch: 1050      Loss: 0.89846605      Time/Epoch(s): 3.9951
-22:48:52      Epoch: 1060      Loss: 0.87814188      Time/Epoch(s): 4.0754
-22:49:33      Epoch: 1070      Loss: 0.89798993      Time/Epoch(s): 4.0279
-22:50:13      Epoch: 1080      Loss: 0.90337372      Time/Epoch(s): 4.0889
-22:50:54      Epoch: 1090      Loss: 10.89471054      Time/Epoch(s): 4.0644
-22:51:35      Epoch: 1100      Loss: 0.92736840      Time/Epoch(s): 4.0595
-    Validation loss: 0.9287539720535278
+01:40:34      Epoch: 1010      Loss: 0.97797155      Time/Epoch(s): 4.0407
+01:41:15      Epoch: 1020      Loss: 0.97746348      Time/Epoch(s): 4.0637
+01:41:56      Epoch: 1030      Loss: 0.97696704      Time/Epoch(s): 4.0882
+01:42:37      Epoch: 1040      Loss: 0.97725576      Time/Epoch(s): 4.0584
+01:43:18      Epoch: 1050      Loss: 0.97587460      Time/Epoch(s): 4.1103
+01:43:59      Epoch: 1060      Loss: 0.97527593      Time/Epoch(s): 4.1205
+01:44:40      Epoch: 1070      Loss: 0.97594988      Time/Epoch(s): 4.0984
+01:45:22      Epoch: 1080      Loss: 0.97440791      Time/Epoch(s): 4.0417
+01:46:02      Epoch: 1090      Loss: 0.97494525      Time/Epoch(s): 4.1228
+01:46:43      Epoch: 1100      Loss: 0.97346538      Time/Epoch(s): 4.0778
+    Validation loss: 0.9735345244407654
+    Best model saved at epoch 1100 with validation loss: 0.9735345244407654
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-22:52:19      Epoch: 1110      Loss: 0.91963196      Time/Epoch(s): 4.0749
-22:52:59      Epoch: 1120      Loss: 0.94041574      Time/Epoch(s): 4.0239
-22:53:40      Epoch: 1130      Loss: 0.95216179      Time/Epoch(s): 4.1218
-22:54:21      Epoch: 1140      Loss: 0.92985547      Time/Epoch(s): 4.0246
-22:55:01      Epoch: 1150      Loss: 0.93256152      Time/Epoch(s): 4.0021
-22:55:42      Epoch: 1160      Loss: 0.92613715      Time/Epoch(s): 4.1193
-22:56:23      Epoch: 1170      Loss: 0.92957419      Time/Epoch(s): 4.0560
-22:57:04      Epoch: 1180      Loss: 0.92406905      Time/Epoch(s): 4.0185
-22:57:44      Epoch: 1190      Loss: 0.92818946      Time/Epoch(s): 4.0419
-22:58:25      Epoch: 1200      Loss: 0.92541909      Time/Epoch(s): 4.0729
-    Validation loss: 0.9315173625946045
+01:47:27      Epoch: 1110      Loss: 0.97289598      Time/Epoch(s): 4.1310
+01:48:08      Epoch: 1120      Loss: 0.97305435      Time/Epoch(s): 4.0982
+01:48:49      Epoch: 1130      Loss: 0.97238755      Time/Epoch(s): 4.1302
+01:49:30      Epoch: 1140      Loss: 0.97221273      Time/Epoch(s): 4.1235
+01:50:11      Epoch: 1150      Loss: 0.97169244      Time/Epoch(s): 4.0393
+01:50:52      Epoch: 1160      Loss: 0.97160840      Time/Epoch(s): 4.0780
+01:51:33      Epoch: 1170      Loss: 0.97127950      Time/Epoch(s): 4.0661
+01:52:14      Epoch: 1180      Loss: 0.97090960      Time/Epoch(s): 4.1055
+01:52:55      Epoch: 1190      Loss: 0.97061771      Time/Epoch(s): 4.0800
+01:53:36      Epoch: 1200      Loss: 0.97060126      Time/Epoch(s): 4.0625
+    Validation loss: 0.9705643653869629
+    Best model saved at epoch 1200 with validation loss: 0.9705643653869629
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-22:59:09      Epoch: 1210      Loss: 0.92902887      Time/Epoch(s): 4.0630
-22:59:50      Epoch: 1220      Loss: 0.90744609      Time/Epoch(s): 4.1626
-23:00:31      Epoch: 1230      Loss: 0.91736645      Time/Epoch(s): 4.0891
-23:01:12      Epoch: 1240      Loss: 0.90781510      Time/Epoch(s): 4.0801
-23:01:52      Epoch: 1250      Loss: 0.90531003      Time/Epoch(s): 4.0871
-23:02:33      Epoch: 1260      Loss: 0.88507473      Time/Epoch(s): 3.9962
-23:03:14      Epoch: 1270      Loss: 0.88284421      Time/Epoch(s): 4.0524
-23:03:55      Epoch: 1280      Loss: 0.89986014      Time/Epoch(s): 4.0391
-23:04:35      Epoch: 1290      Loss: 0.87406719      Time/Epoch(s): 4.0715
-23:05:16      Epoch: 1300      Loss: 0.89421141      Time/Epoch(s): 4.0893
-    Validation loss: 0.8156747221946716
+01:54:19      Epoch: 1210      Loss: 0.96985567      Time/Epoch(s): 4.1011
+01:55:00      Epoch: 1220      Loss: 0.96972418      Time/Epoch(s): 4.0933
+01:55:41      Epoch: 1230      Loss: 0.97036207      Time/Epoch(s): 4.0108
+01:56:22      Epoch: 1240      Loss: 0.97027922      Time/Epoch(s): 4.0950
+01:57:03      Epoch: 1250      Loss: 0.96878713      Time/Epoch(s): 4.0539
+01:57:44      Epoch: 1260      Loss: 0.96821666      Time/Epoch(s): 4.1670
+01:58:25      Epoch: 1270      Loss: 0.96826398      Time/Epoch(s): 4.0963
+01:59:06      Epoch: 1280      Loss: 0.96778363      Time/Epoch(s): 4.0978
+01:59:47      Epoch: 1290      Loss: 0.96766841      Time/Epoch(s): 4.0819
+02:00:28      Epoch: 1300      Loss: 0.96752763      Time/Epoch(s): 4.1213
+    Validation loss: 0.9673120975494385
+    Best model saved at epoch 1300 with validation loss: 0.9673120975494385
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-23:06:01      Epoch: 1310      Loss: 0.87455791      Time/Epoch(s): 4.0835
-23:06:41      Epoch: 1320      Loss: 0.89571375      Time/Epoch(s): 4.0975
-23:07:22      Epoch: 1330      Loss: 6326050816.00000000      Time/Epoch(s): 4.0988
-23:08:03      Epoch: 1340      Loss: 0.92184085      Time/Epoch(s): 4.0988
-23:08:44      Epoch: 1350      Loss: 0.91773069      Time/Epoch(s): 4.1095
-23:09:25      Epoch: 1360      Loss: 0.92051572      Time/Epoch(s): 4.0752
-23:10:06      Epoch: 1370      Loss: 0.95331258      Time/Epoch(s): 4.0571
-23:10:47      Epoch: 1380      Loss: 0.93146873      Time/Epoch(s): 4.0721
-23:11:27      Epoch: 1390      Loss: 0.92260265      Time/Epoch(s): 4.0271
-23:12:08      Epoch: 1400      Loss: 0.92932051      Time/Epoch(s): 4.1072
-    Validation loss: 0.9300217628479004
+02:01:12      Epoch: 1310      Loss: 0.96700066      Time/Epoch(s): 4.0900
+02:01:52      Epoch: 1320      Loss: 0.96685255      Time/Epoch(s): 4.0258
+02:02:33      Epoch: 1330      Loss: 0.96608847      Time/Epoch(s): 4.0776
+02:03:14      Epoch: 1340      Loss: 0.96595621      Time/Epoch(s): 4.1241
+02:03:55      Epoch: 1350      Loss: 0.96570218      Time/Epoch(s): 4.1078
+02:04:37      Epoch: 1360      Loss: 0.96548963      Time/Epoch(s): 4.1035
+02:05:18      Epoch: 1370      Loss: 0.96518058      Time/Epoch(s): 4.0724
+02:05:58      Epoch: 1380      Loss: 0.96464819      Time/Epoch(s): 4.1338
+02:06:40      Epoch: 1390      Loss: 0.96422076      Time/Epoch(s): 4.1398
+02:07:20      Epoch: 1400      Loss: 0.96395588      Time/Epoch(s): 4.1017
+    Validation loss: 0.9637163877487183
+    Best model saved at epoch 1400 with validation loss: 0.9637163877487183
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-23:12:53      Epoch: 1410      Loss: 0.92830169      Time/Epoch(s): 4.1223
-23:13:33      Epoch: 1420      Loss: 0.92459697      Time/Epoch(s): 4.0831
-23:14:14      Epoch: 1430      Loss: 0.93098378      Time/Epoch(s): 4.1477
-23:14:55      Epoch: 1440      Loss: 0.92086715      Time/Epoch(s): 4.0683
-23:15:36      Epoch: 1450      Loss: 0.92677778      Time/Epoch(s): 4.1366
-23:16:17      Epoch: 1460      Loss: 0.91965806      Time/Epoch(s): 4.1132
-23:16:58      Epoch: 1470      Loss: 0.91099989      Time/Epoch(s): 4.1153
-23:17:39      Epoch: 1480      Loss: 0.91130775      Time/Epoch(s): 4.0733
-23:18:20      Epoch: 1490      Loss: 0.90497971      Time/Epoch(s): 4.0909
-23:19:01      Epoch: 1500      Loss: 0.89496124      Time/Epoch(s): 4.1241
-    Validation loss: 0.9220094680786133
+02:08:04      Epoch: 1410      Loss: 0.96348524      Time/Epoch(s): 4.0982
+02:08:45      Epoch: 1420      Loss: 0.96336019      Time/Epoch(s): 4.1523
+02:09:26      Epoch: 1430      Loss: 0.96360320      Time/Epoch(s): 4.0417
+02:10:07      Epoch: 1440      Loss: 0.96234012      Time/Epoch(s): 4.0383
+02:10:48      Epoch: 1450      Loss: 0.96188378      Time/Epoch(s): 4.1236
+02:11:29      Epoch: 1460      Loss: 0.96148127      Time/Epoch(s): 4.0631
+02:12:10      Epoch: 1470      Loss: 0.96097183      Time/Epoch(s): 4.1364
+02:12:50      Epoch: 1480      Loss: 0.96073294      Time/Epoch(s): 4.0421
+02:13:32      Epoch: 1490      Loss: 0.96009749      Time/Epoch(s): 4.0835
+02:14:13      Epoch: 1500      Loss: 0.95994109      Time/Epoch(s): 4.1404
+    Validation loss: 0.9597107768058777
+    Best model saved at epoch 1500 with validation loss: 0.9597107768058777
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-23:19:45      Epoch: 1510      Loss: 0.88888419      Time/Epoch(s): 4.0615
-23:20:26      Epoch: 1520      Loss: 0.87613237      Time/Epoch(s): 4.0999
-23:21:07      Epoch: 1530      Loss: 0.86739194      Time/Epoch(s): 4.1192
-23:21:48      Epoch: 1540      Loss: 0.86384177      Time/Epoch(s): 4.0676
-23:22:29      Epoch: 1550      Loss: 0.86660212      Time/Epoch(s): 4.1083
-23:23:10      Epoch: 1560      Loss: 0.89135015      Time/Epoch(s): 4.0956
-23:23:51      Epoch: 1570      Loss: 0.89533776      Time/Epoch(s): 4.1247
-23:24:32      Epoch: 1580      Loss: 0.90666997      Time/Epoch(s): 4.1160
-23:25:13      Epoch: 1590      Loss: 0.89097708      Time/Epoch(s): 4.0622
-23:25:54      Epoch: 1600      Loss: 0.86036295      Time/Epoch(s): 4.1082
-    Validation loss: 0.9110959768295288
+02:14:56      Epoch: 1510      Loss: 0.95944226      Time/Epoch(s): 4.0789
+02:15:37      Epoch: 1520      Loss: 0.95894164      Time/Epoch(s): 4.0415
+02:16:18      Epoch: 1530      Loss: 0.95869875      Time/Epoch(s): 4.1017
+02:16:59      Epoch: 1540      Loss: 0.97604078      Time/Epoch(s): 4.1389
+02:17:41      Epoch: 1550      Loss: 0.96584761      Time/Epoch(s): 4.1452
+02:18:22      Epoch: 1560      Loss: 0.96429414      Time/Epoch(s): 4.0836
+02:19:03      Epoch: 1570      Loss: 0.96285033      Time/Epoch(s): 4.1475
+02:19:44      Epoch: 1580      Loss: 0.96190065      Time/Epoch(s): 4.0954
+02:20:25      Epoch: 1590      Loss: 0.96149272      Time/Epoch(s): 4.0545
+02:21:06      Epoch: 1600      Loss: 0.96071541      Time/Epoch(s): 4.1100
+    Validation loss: 0.9607430696487427
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-23:26:38      Epoch: 1610      Loss: 0.85028124      Time/Epoch(s): 4.0923
-23:27:19      Epoch: 1620      Loss: 0.86052370      Time/Epoch(s): 3.9911
-23:28:00      Epoch: 1630      Loss: 0.85763240      Time/Epoch(s): 4.0259
-23:28:41      Epoch: 1640      Loss: 0.89720726      Time/Epoch(s): 3.9971
-23:29:22      Epoch: 1650      Loss: 0.85936642      Time/Epoch(s): 4.0947
-23:30:03      Epoch: 1660      Loss: 0.87138689      Time/Epoch(s): 4.1140
-23:30:44      Epoch: 1670      Loss: 0.84361088      Time/Epoch(s): 4.1202
-23:31:25      Epoch: 1680      Loss: 0.89452612      Time/Epoch(s): 4.1495
-23:32:06      Epoch: 1690      Loss: 0.84572715      Time/Epoch(s): 4.1141
-23:32:47      Epoch: 1700      Loss: 0.83383220      Time/Epoch(s): 4.0620
-    Validation loss: 0.7842205762863159
+02:21:50      Epoch: 1610      Loss: 0.96040624      Time/Epoch(s): 4.0606
+02:22:31      Epoch: 1620      Loss: 0.95985764      Time/Epoch(s): 4.1366
+02:23:11      Epoch: 1630      Loss: 0.95917928      Time/Epoch(s): 4.0867
+02:23:52      Epoch: 1640      Loss: 0.95867717      Time/Epoch(s): 4.1469
+02:24:34      Epoch: 1650      Loss: 0.95832717      Time/Epoch(s): 4.1142
+02:25:15      Epoch: 1660      Loss: 0.96133178      Time/Epoch(s): 4.1073
+02:25:56      Epoch: 1670      Loss: 0.95822752      Time/Epoch(s): 4.1412
+02:26:37      Epoch: 1680      Loss: 0.95692343      Time/Epoch(s): 4.2923
+02:27:18      Epoch: 1690      Loss: 0.95662880      Time/Epoch(s): 4.0720
+02:27:59      Epoch: 1700      Loss: 0.95589554      Time/Epoch(s): 4.0908
+    Validation loss: 0.9561084508895874
+    Best model saved at epoch 1700 with validation loss: 0.9561084508895874
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-23:33:31      Epoch: 1710      Loss: 0.87861317      Time/Epoch(s): 4.1205
-23:34:12      Epoch: 1720      Loss: 0.87026137      Time/Epoch(s): 4.1150
-23:34:53      Epoch: 1730      Loss: 0.89574575      Time/Epoch(s): 4.0652
-23:35:34      Epoch: 1740      Loss: 0.91919249      Time/Epoch(s): 4.0885
-23:36:15      Epoch: 1750      Loss: 0.89338911      Time/Epoch(s): 4.0395
-23:36:56      Epoch: 1760      Loss: 0.87144017      Time/Epoch(s): 4.1483
-23:37:37      Epoch: 1770      Loss: 0.85210860      Time/Epoch(s): 4.0906
-23:38:19      Epoch: 1780      Loss: 0.90364981      Time/Epoch(s): 4.3085
-23:39:00      Epoch: 1790      Loss: 0.90498078      Time/Epoch(s): 4.0997
-23:39:40      Epoch: 1800      Loss: 0.91191137      Time/Epoch(s): 4.0840
-    Validation loss: 0.7869495153427124
+02:28:42      Epoch: 1710      Loss: 0.95556712      Time/Epoch(s): 4.1010
+02:29:23      Epoch: 1720      Loss: 0.95521808      Time/Epoch(s): 4.0726
+02:30:04      Epoch: 1730      Loss: 0.95467496      Time/Epoch(s): 4.1154
+02:30:45      Epoch: 1740      Loss: 0.95446873      Time/Epoch(s): 4.1131
+02:31:26      Epoch: 1750      Loss: 0.95426053      Time/Epoch(s): 4.0835
+02:32:07      Epoch: 1760      Loss: 0.95352376      Time/Epoch(s): 4.0194
+02:32:48      Epoch: 1770      Loss: 0.95330644      Time/Epoch(s): 4.0966
+02:33:29      Epoch: 1780      Loss: 0.97148150      Time/Epoch(s): 4.0420
+02:34:10      Epoch: 1790      Loss: 0.95296735      Time/Epoch(s): 4.1021
+02:34:51      Epoch: 1800      Loss: 0.95232385      Time/Epoch(s): 4.1326
+    Validation loss: 0.9522778987884521
+    Best model saved at epoch 1800 with validation loss: 0.9522778987884521
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-23:40:25      Epoch: 1810      Loss: 0.93654650      Time/Epoch(s): 4.0926
-23:41:06      Epoch: 1820      Loss: 0.89276212      Time/Epoch(s): 4.1230
-23:41:47      Epoch: 1830      Loss: 0.88697004      Time/Epoch(s): 4.3584
-23:42:28      Epoch: 1840      Loss: 0.89641130      Time/Epoch(s): 4.0857
-23:43:09      Epoch: 1850      Loss: 0.89465421      Time/Epoch(s): 4.1065
-23:43:50      Epoch: 1860      Loss: 0.91177142      Time/Epoch(s): 4.1520
-23:44:32      Epoch: 1870      Loss: 0.90259904      Time/Epoch(s): 4.1024
-23:45:13      Epoch: 1880      Loss: 0.89279187      Time/Epoch(s): 4.0849
-23:45:54      Epoch: 1890      Loss: 0.89659011      Time/Epoch(s): 4.1293
-23:46:35      Epoch: 1900      Loss: 0.89316201      Time/Epoch(s): 4.1278
-    Validation loss: 0.9157344698905945
+02:35:35      Epoch: 1810      Loss: 0.95206380      Time/Epoch(s): 4.0969
+02:36:16      Epoch: 1820      Loss: 0.95190287      Time/Epoch(s): 4.0805
+02:36:57      Epoch: 1830      Loss: 0.95149606      Time/Epoch(s): 4.1334
+02:37:38      Epoch: 1840      Loss: 0.95124376      Time/Epoch(s): 4.1483
+02:38:19      Epoch: 1850      Loss: 0.95083952      Time/Epoch(s): 4.1202
+02:39:00      Epoch: 1860      Loss: 0.95049870      Time/Epoch(s): 4.1187
+02:39:41      Epoch: 1870      Loss: 0.95038033      Time/Epoch(s): 4.1358
+02:40:23      Epoch: 1880      Loss: 0.94996655      Time/Epoch(s): 4.1254
+02:41:04      Epoch: 1890      Loss: 0.94944918      Time/Epoch(s): 4.1443
+02:41:45      Epoch: 1900      Loss: 0.95067519      Time/Epoch(s): 4.1300
+    Validation loss: 0.9495353102684021
+    Best model saved at epoch 1900 with validation loss: 0.9495353102684021
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-23:47:19      Epoch: 1910      Loss: 0.90543926      Time/Epoch(s): 4.1400
-23:48:00      Epoch: 1920      Loss: 0.90178323      Time/Epoch(s): 4.0808
-23:48:42      Epoch: 1930      Loss: 0.91609782      Time/Epoch(s): 4.1413
-23:49:23      Epoch: 1940      Loss: 0.93690079      Time/Epoch(s): 4.1054
-23:50:04      Epoch: 1950      Loss: 0.89921999      Time/Epoch(s): 4.1480
-23:50:45      Epoch: 1960      Loss: 0.89247698      Time/Epoch(s): 4.1707
-23:51:26      Epoch: 1970      Loss: 0.89463377      Time/Epoch(s): 4.0367
-23:52:07      Epoch: 1980      Loss: 0.89174145      Time/Epoch(s): 4.1301
-23:52:48      Epoch: 1990      Loss: 0.90756506      Time/Epoch(s): 4.1219
-23:53:29      Epoch: 2000      Loss: 0.90268159      Time/Epoch(s): 4.1405
-    Validation loss: 0.9245280027389526
+02:42:28      Epoch: 1910      Loss: 0.94891787      Time/Epoch(s): 4.0802
+02:43:09      Epoch: 1920      Loss: 0.94908357      Time/Epoch(s): 4.1987
+02:43:51      Epoch: 1930      Loss: 0.94861543      Time/Epoch(s): 4.1281
+02:44:32      Epoch: 1940      Loss: 0.94851911      Time/Epoch(s): 4.1525
+02:45:13      Epoch: 1950      Loss: 0.94825721      Time/Epoch(s): 4.0613
+02:45:54      Epoch: 1960      Loss: 0.94760382      Time/Epoch(s): 4.0698
+02:46:35      Epoch: 1970      Loss: 0.94874567      Time/Epoch(s): 4.1352
+02:47:17      Epoch: 1980      Loss: 0.94718862      Time/Epoch(s): 4.1071
+02:47:58      Epoch: 1990      Loss: 0.94697779      Time/Epoch(s): 4.0677
+02:48:38      Epoch: 2000      Loss: 0.94602597      Time/Epoch(s): 4.0730
+    Validation loss: 0.9465171694755554
+    Best model saved at epoch 2000 with validation loss: 0.9465171694755554
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-23:54:13      Epoch: 2010      Loss: 0.89429414      Time/Epoch(s): 4.1062
-23:54:54      Epoch: 2020      Loss: 0.89966905      Time/Epoch(s): 4.1206
-23:55:36      Epoch: 2030      Loss: 0.88718343      Time/Epoch(s): 4.1127
-23:56:17      Epoch: 2040      Loss: 0.90668261      Time/Epoch(s): 4.1079
-23:56:58      Epoch: 2050      Loss: 0.89936107      Time/Epoch(s): 4.0993
-23:57:39      Epoch: 2060      Loss: 0.91679108      Time/Epoch(s): 4.1182
-23:58:20      Epoch: 2070      Loss: 0.92769974      Time/Epoch(s): 4.1628
-23:59:01      Epoch: 2080      Loss: 0.89803326      Time/Epoch(s): 4.1397
-23:59:42      Epoch: 2090      Loss: 0.89243096      Time/Epoch(s): 4.1242
-00:00:24      Epoch: 2100      Loss: 0.89479685      Time/Epoch(s): 4.0477
-    Validation loss: 0.9264858961105347
+02:49:22      Epoch: 2010      Loss: 0.94576490      Time/Epoch(s): 4.1059
+02:50:03      Epoch: 2020      Loss: 0.94413388      Time/Epoch(s): 4.1855
+02:50:44      Epoch: 2030      Loss: 0.94063991      Time/Epoch(s): 4.0631
+02:51:25      Epoch: 2040      Loss: 0.93208194      Time/Epoch(s): 4.1180
+02:52:06      Epoch: 2050      Loss: 0.92181915      Time/Epoch(s): 4.0221
+02:52:48      Epoch: 2060      Loss: 0.91220629      Time/Epoch(s): 4.1418
+02:53:29      Epoch: 2070      Loss: 0.90804303      Time/Epoch(s): 4.0642
+02:54:10      Epoch: 2080      Loss: 0.90511537      Time/Epoch(s): 4.0683
+02:54:51      Epoch: 2090      Loss: 0.90314758      Time/Epoch(s): 4.1368
+02:55:32      Epoch: 2100      Loss: 0.90077704      Time/Epoch(s): 4.1236
+    Validation loss: 0.9011504650115967
+    Best model saved at epoch 2100 with validation loss: 0.9011504650115967
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-00:01:08      Epoch: 2110      Loss: 0.89278787      Time/Epoch(s): 4.0661
-00:01:49      Epoch: 2120      Loss: 0.91016626      Time/Epoch(s): 4.0822
-00:02:30      Epoch: 2130      Loss: 0.90414184      Time/Epoch(s): 4.0634
-00:03:11      Epoch: 2140      Loss: 0.89042211      Time/Epoch(s): 4.3141
-00:03:52      Epoch: 2150      Loss: 0.89839375      Time/Epoch(s): 4.1339
-00:04:33      Epoch: 2160      Loss: 0.88019550      Time/Epoch(s): 4.0855
-00:05:15      Epoch: 2170      Loss: 0.90590781      Time/Epoch(s): 4.1261
-00:05:56      Epoch: 2180      Loss: 0.90019101      Time/Epoch(s): 4.1630
-00:06:37      Epoch: 2190      Loss: 0.91554177      Time/Epoch(s): 4.1038
-00:07:18      Epoch: 2200      Loss: 0.92584670      Time/Epoch(s): 4.1601
-    Validation loss: 0.9089919328689575
+02:56:16      Epoch: 2110      Loss: 0.90006387      Time/Epoch(s): 4.1489
+02:56:57      Epoch: 2120      Loss: 0.90089536      Time/Epoch(s): 4.1236
+02:57:38      Epoch: 2130      Loss: 0.91076684      Time/Epoch(s): 4.1439
+02:58:19      Epoch: 2140      Loss: 0.90023774      Time/Epoch(s): 4.0706
+02:59:01      Epoch: 2150      Loss: 0.89995760      Time/Epoch(s): 4.0548
+02:59:42      Epoch: 2160      Loss: 0.90007299      Time/Epoch(s): 4.1040
+03:00:23      Epoch: 2170      Loss: 0.89897299      Time/Epoch(s): 4.1368
+03:01:05      Epoch: 2180      Loss: 0.89859748      Time/Epoch(s): 4.1412
+03:01:46      Epoch: 2190      Loss: 0.89823478      Time/Epoch(s): 4.1796
+03:02:27      Epoch: 2200      Loss: 0.89796615      Time/Epoch(s): 4.1161
+    Validation loss: 0.8970874547958374
+    Best model saved at epoch 2200 with validation loss: 0.8970874547958374
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-00:08:02      Epoch: 2210      Loss: 0.89863533      Time/Epoch(s): 4.0847
-00:08:43      Epoch: 2220      Loss: 0.88848013      Time/Epoch(s): 4.0798
-00:09:24      Epoch: 2230      Loss: 0.89344615      Time/Epoch(s): 4.1025
-00:10:05      Epoch: 2240      Loss: 0.88762236      Time/Epoch(s): 4.1337
-00:10:47      Epoch: 2250      Loss: 0.90751255      Time/Epoch(s): 4.0957
-00:11:28      Epoch: 2260      Loss: 0.89660800      Time/Epoch(s): 4.0628
-00:12:09      Epoch: 2270      Loss: 0.88927764      Time/Epoch(s): 4.1164
-00:12:50      Epoch: 2280      Loss: 0.89541602      Time/Epoch(s): 4.1699
-00:13:31      Epoch: 2290      Loss: 0.87870312      Time/Epoch(s): 4.1453
-00:14:12      Epoch: 2300      Loss: 0.90195906      Time/Epoch(s): 4.0629
-    Validation loss: 0.9279584288597107
+03:03:11      Epoch: 2210      Loss: 0.89729637      Time/Epoch(s): 4.0950
+03:03:52      Epoch: 2220      Loss: 0.89744103      Time/Epoch(s): 4.1452
+03:04:33      Epoch: 2230      Loss: 0.89641351      Time/Epoch(s): 4.0902
+03:05:15      Epoch: 2240      Loss: 0.89902806      Time/Epoch(s): 4.0866
+03:05:56      Epoch: 2250      Loss: 0.89553857      Time/Epoch(s): 4.1104
+03:06:37      Epoch: 2260      Loss: 0.89521670      Time/Epoch(s): 4.1126
+03:07:18      Epoch: 2270      Loss: 0.89502776      Time/Epoch(s): 4.1185
+03:07:59      Epoch: 2280      Loss: 0.89463437      Time/Epoch(s): 4.1387
+03:08:41      Epoch: 2290      Loss: 0.89447546      Time/Epoch(s): 4.1277
+03:09:22      Epoch: 2300      Loss: 0.89389652      Time/Epoch(s): 4.1483
+    Validation loss: 0.8942636251449585
+    Best model saved at epoch 2300 with validation loss: 0.8942636251449585
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-00:14:57      Epoch: 2310      Loss: 0.90260255      Time/Epoch(s): 4.0791
-00:15:38      Epoch: 2320      Loss: 0.91410321      Time/Epoch(s): 4.0832
-00:16:19      Epoch: 2330      Loss: 0.92899966      Time/Epoch(s): 4.1400
-00:17:00      Epoch: 2340      Loss: 0.89938235      Time/Epoch(s): 4.1250
-00:17:41      Epoch: 2350      Loss: 0.88834417      Time/Epoch(s): 4.0786
-00:18:23      Epoch: 2360      Loss: 0.89188159      Time/Epoch(s): 4.0865
-00:19:04      Epoch: 2370      Loss: 0.88503212      Time/Epoch(s): 4.1193
-00:19:45      Epoch: 2380      Loss: 0.89415884      Time/Epoch(s): 4.1358
-00:20:26      Epoch: 2390      Loss: 0.89881539      Time/Epoch(s): 4.1371
-00:21:07      Epoch: 2400      Loss: 0.89891905      Time/Epoch(s): 4.0948
-    Validation loss: 0.9260446429252625
+03:10:06      Epoch: 2310      Loss: 0.89394271      Time/Epoch(s): 4.0748
+03:10:47      Epoch: 2320      Loss: 0.89388156      Time/Epoch(s): 4.0608
+03:11:28      Epoch: 2330      Loss: 0.89345109      Time/Epoch(s): 4.1071
+03:12:09      Epoch: 2340      Loss: 0.89331043      Time/Epoch(s): 4.0483
+03:12:51      Epoch: 2350      Loss: 0.89287412      Time/Epoch(s): 4.1096
+03:13:32      Epoch: 2360      Loss: 0.89297765      Time/Epoch(s): 4.1465
+03:14:14      Epoch: 2370      Loss: 0.89290810      Time/Epoch(s): 4.1118
+03:14:55      Epoch: 2380      Loss: 0.89252126      Time/Epoch(s): 4.3593
+03:15:36      Epoch: 2390      Loss: 0.89210320      Time/Epoch(s): 4.1660
+03:16:18      Epoch: 2400      Loss: 0.89220524      Time/Epoch(s): 4.1328
+    Validation loss: 0.8925721645355225
+    Best model saved at epoch 2400 with validation loss: 0.8925721645355225
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-00:21:51      Epoch: 2410      Loss: 0.89350665      Time/Epoch(s): 4.1449
-00:22:33      Epoch: 2420      Loss: 0.90427107      Time/Epoch(s): 4.1353
-00:23:14      Epoch: 2430      Loss: 0.89839125      Time/Epoch(s): 4.1319
-00:23:55      Epoch: 2440      Loss: 0.88315690      Time/Epoch(s): 4.1448
-00:24:36      Epoch: 2450      Loss: 0.89142263      Time/Epoch(s): 4.1562
-00:25:17      Epoch: 2460      Loss: 0.87001675      Time/Epoch(s): 4.1413
-00:25:59      Epoch: 2470      Loss: 0.89896441      Time/Epoch(s): 4.0770
-00:26:40      Epoch: 2480      Loss: 0.90026414      Time/Epoch(s): 4.1634
-00:27:21      Epoch: 2490      Loss: 0.91269338      Time/Epoch(s): 4.1419
-00:27:58      Epoch: 2499      Loss: 0.88606781      Time/Epoch(s): 4.1032
+03:17:01      Epoch: 2410      Loss: 0.89183772      Time/Epoch(s): 4.1223
+03:17:43      Epoch: 2420      Loss: 0.89165771      Time/Epoch(s): 4.1685
+03:18:24      Epoch: 2430      Loss: 0.89133495      Time/Epoch(s): 4.1301
+03:19:05      Epoch: 2440      Loss: 0.89114016      Time/Epoch(s): 4.1338
+03:19:47      Epoch: 2450      Loss: 0.89107531      Time/Epoch(s): 4.1381
+03:20:28      Epoch: 2460      Loss: 0.89095116      Time/Epoch(s): 4.0931
+03:21:09      Epoch: 2470      Loss: 0.89054787      Time/Epoch(s): 4.1007
+03:21:50      Epoch: 2480      Loss: 0.89051622      Time/Epoch(s): 4.1035
+03:22:32      Epoch: 2490      Loss: 0.89011669      Time/Epoch(s): 4.1654
+03:23:09      Epoch: 2499      Loss: 0.89025950      Time/Epoch(s): 4.1364
 
-Total training time: 02:51:27
+Total training time: 02:52:04
 
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
-  xx = (xx * 255).astype(np.uint8)
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/subprocess.py:1883: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = _fork_exec(
-/home/gb21553/Projects/PiedPiper/piedpiper/visualtester.py:271: RuntimeWarning: invalid value encountered in cast
-  int_img = int_img.astype(np.uint8)
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/PiedPiper/examples/voxceleb/main_vid_cde.py", line 313, in <module>
+    vt.visualize_videos(test_dataloader, 
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/PiedPiper/piedpiper/visualtester.py", line 166, in visualize_videos
+    (pred_videos, uq_videos), _ = eqx.filter_vmap(self.trainer.learner.model.naive_predict)(ctx_videos)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Model' object has no attribute 'naive_predict'
