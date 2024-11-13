@@ -26,8 +26,8 @@ envs_batch_size = 41
 envs_batch_size_all = envs_batch_size
 num_batches = 82//41
 
-init_lr = 5e-4
-nb_epochs = 10000//2
+init_lr = 1e-3
+nb_epochs = 5000
 print_every = 10
 validate_every = 100
 sched_factor = 1.0
@@ -154,7 +154,7 @@ class Control(eqx.Module):
         # ts_3d = jnp.repeat(ts[:, None], H*W, axis=1).reshape((T, 1, H, W))
         # xs = jnp.concatenate([ts_3d, xs], axis=1)   ## xs shape: (T, C+1, H, W) - time is the first channel
 
-        ## Put the time dimension last and channel last
+        ## Put the time dimension last and channel first
         xs = xs.transpose(1, 2, 3, 0)
 
         # @eqx.filter_vmap(in_axes=(None, None, 0))
@@ -206,14 +206,31 @@ class ODEFunc(eqx.Module):
         self.vector_field = VectorField(C, H, W, c, h, w, key=keys[0])
         self.control = Control(C, H, W, c, h, w, key=keys[1])
 
-    def __call__(self, t, y, args):
-        ts, xs, masks, control_encoder = args
+    # def __call__(self, t, y, args):
+    #     ts, xs, masks, control_encoder = args
 
-        ## We take in all the xs, althgouh the future ones wont's be needed in the interpolation (most likely)- we can fix this
-        ### We normally work with our data as (H, W, C). Let's make sure every input is channel first
-        y = y.transpose(2, 0, 1)    ## y shape: (2*C, H, W)
-        xs = xs.transpose(0, 3, 1, 2)    ## xs shape: (T, C, H, W)
-        masks = masks.transpose(0, 3, 1, 2)    ## masks shape: (T, 1, H, W)
+    #     ## We take in all the xs, althgouh the future ones wont's be needed in the interpolation (most likely)- we can fix this
+    #     ### We normally work with our data as (H, W, C). Let's make sure every input is channel first
+    #     y = y.transpose(2, 0, 1)    ## y shape: (2*C, H, W)
+    #     xs = xs.transpose(0, 3, 1, 2)    ## xs shape: (T, C, H, W)
+    #     masks = masks.transpose(0, 3, 1, 2)    ## masks shape: (T, 1, H, W)
+
+    #     mu, sigma = jnp.split(y, 2, axis=0)                     ## mu, sigma shape: (C, H, W)
+    #     mu_big, sigma_big = self.vector_field(mu, sigma)        ## mu_big, sigma_big shape: (cxhxw+1, C, H, W)
+    #     dx_dt_big = self.control(t, ts, xs, masks, control_encoder)                     ## dx_dt_big shape: (cxhxw+1, C, H, W)
+
+    #     mu = jnp.sum(mu_big * dx_dt_big, axis=0)    ## mu shape: (C, H, W)
+    #     sigma = jnp.sum(sigma_big * dx_dt_big, axis=0)    ## sigma shape: (C, H, W)
+
+    #     next_y = jnp.concatenate([mu, sigma], axis=0)
+
+    #     return next_y.transpose(1, 2, 0)    ## next_y shape: (H, W, 2*C)
+
+
+
+    def __call__(self, t, y, args):
+        """ Assume the data is in already channel first format """
+        ts, xs, masks, control_encoder = args
 
         mu, sigma = jnp.split(y, 2, axis=0)                     ## mu, sigma shape: (C, H, W)
         mu_big, sigma_big = self.vector_field(mu, sigma)        ## mu_big, sigma_big shape: (cxhxw+1, C, H, W)
@@ -224,7 +241,9 @@ class ODEFunc(eqx.Module):
 
         next_y = jnp.concatenate([mu, sigma], axis=0)
 
-        return next_y.transpose(1, 2, 0)    ## next_y shape: (H, W, 2*C)
+        return next_y    ## next_y shape: (2*C, H, W)
+
+
 
 
 class Model(eqx.Module):
@@ -236,9 +255,6 @@ class Model(eqx.Module):
         keys = jax.random.split(key, 2)
         self.init_cond = ConvCNP(C, H, W, latent_chans, epsilon=eps, key=keys[0])
         self.ode_func = ODEFunc(C, H, W, c, h, w, key=keys[1])
-
-    # def preprocess(self, XY):
-    #     return self.init_cond.preprocess(XY)    ## Returns img of shape: (C, H, W), and mask of shape: (1, H, W)
 
     def align_inputs(self, XY):
         """ Align the inputs for appropriate processing by the model """
@@ -266,11 +282,15 @@ class Model(eqx.Module):
                 response = corrupt_signal*mask + response*(1-mask)
                 response = jax.scipy.signal.convolve(response, kernel, mode='same')
             return response
-        masks = eqx.filter_vmap(smoothen)(xs, masks)
+        xs = eqx.filter_vmap(smoothen)(xs, masks)
+
+        ## Put the time dimension first and channel first
+        xs = xs.transpose(0, 3, 1, 2)    ## xs shape: (T, C, H, W)
+        masks = masks.transpose(0, 3, 1, 2)    ## masks shape: (T, 1, H, W)
 
         ## Predict y0 with a ConvCNP
         mu_y0, sigma_y0 = self.init_cond(ctx_data[0])    ## each of shape: (H, W, C)
-        y0 = jnp.concatenate([mu_y0, sigma_y0], axis=-1)
+        y0 = jnp.concatenate([mu_y0, sigma_y0], axis=-1).transpose(2, 0, 1)    ## y0 shape: (2*C, H, W)
 
         sol = diffrax.diffeqsolve(
                 terms=diffrax.ODETerm(self.ode_func),
@@ -289,7 +309,7 @@ class Model(eqx.Module):
             )
 
         ## Width first and channel last
-        pred_vid = sol.ys.transpose(0, 2, 1, 3)    ## pred_vid shape: (T, W, H, C*2)
+        pred_vid = sol.ys.transpose(0, 3, 2, 1)    ## pred_vid shape: (T, W, H, C*2)
 
         mus, sigmas = jnp.split(pred_vid, 2, axis=-1)    ## mus, sigmas shape: (T, W, H, C)
         sigmas = self.init_cond.positivity(sigmas)
