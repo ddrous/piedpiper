@@ -51,7 +51,8 @@ class VisualTester:
                 img = make_image(xy, rgb, img_size=(*resolution, 3))
             else:
                 img = video[i]
-            axs[i].imshow(img)
+            # axs[i].imshow(img)
+            axs[i].imshow(img.transpose(1, 0, 2))
             # axs[i].axis("off")
             axs[i].set_xticks([])
             axs[i].set_yticks([])
@@ -95,27 +96,27 @@ class VisualTester:
             else:
                 ax1, ax2, ax3, ax4, ax5 = axs
 
-            img_true = make_image(Xt[e_], Yt[e_], img_size=img_shape)
+            img_true = make_image(Xt[e_], Yt[e_], img_size=img_shape).transpose(1, 0, 2)
             ax1.imshow(img_true)
             if e==0:
                 ax1.set_title(f"Target", fontsize=22)
 
-            img_fw = make_image(Xc[e_], Yc[e_], img_size=img_shape)
+            img_fw = make_image(Xc[e_], Yc[e_], img_size=img_shape).transpose(1, 0, 2)
             ax2.imshow(img_fw)
             if e==0:
                 ax2.set_title(f"Context Set", fontsize=22)
 
-            img_pred = mus[e_]
+            img_pred = mus[e_].transpose(1, 0, 2)
             ax3.imshow(img_pred)
             if e==0:
                 ax3.set_title(f"Prediction", fontsize=22)
 
-            img_std = sigmas[e_]
+            img_std = sigmas[e_].transpose(1, 0, 2)
             ax4.imshow(img_std)
             if e==0:
                 ax4.set_title(f"Uncertainty", fontsize=22)
 
-            interpolation = interpolate_2D_image(np.asarray(Xc[e_]), np.asarray(Yc[e_]), img_shape, method=interp_method)
+            interpolation = interpolate_2D_image(np.asarray(Xc[e_]), np.asarray(Yc[e_]), img_shape, method=interp_method).transpose(1, 0, 2)
             ax5.imshow(interpolation)
             if e==0:
                 ax5.set_title(f"{interp_method.capitalize()} Int.", fontsize=22)
@@ -175,8 +176,8 @@ class VisualTester:
             img = np.clip(img, 0., 1.)
             if return_ints:
                 img = (img*255).astype(np.uint8)
-            return img
-    
+            return img.transpose(1, 0, 2)
+
         nb_vids_per_env = 6
         fig, ax = plt.subplots(nb_vids_per_env*nb_envs, nb_frames+1, figsize=(2*(nb_frames+1), nb_vids_per_env*2*nb_envs))
 
@@ -231,7 +232,7 @@ class VisualTester:
                 ax[e*nb_vids_per_env+4, i].set_yticks([])
 
                 ## The interpolated images in the fifth row
-                img_interp = interpolate_2D_image(ctx_video[i-1,...,:2], ctx_video[i-1,...,2:], img_shape, method=interp_method)
+                img_interp = interpolate_2D_image(ctx_video[i-1,...,:2], ctx_video[i-1,...,2:], img_shape, method=interp_method).transpose(1, 0, 2)
                 ax[e*nb_vids_per_env+5, i].imshow(img_interp)
                 ax[e*nb_vids_per_env+5, i].set_xticks([])
                 ax[e*nb_vids_per_env+5, i].set_yticks([])
@@ -268,6 +269,6 @@ class VisualTester:
             save_path_interp = video_prefix + "_interp.mp4"
             with imageio.get_writer(save_path_interp, mode='I') as writer:
                 for i in range(nb_frames):
-                    int_img = interpolate_2D_image(ctx_video[i,...,:2], ctx_video[i,...,2:], img_shape, method=interp_method)*255
+                    int_img = interpolate_2D_image(ctx_video[i,...,:2], ctx_video[i,...,2:], img_shape, method=interp_method).transpose(1,0,2)*255
                     int_img = int_img.astype(np.uint8)
                     writer.append_data(int_img)

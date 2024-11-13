@@ -187,7 +187,7 @@ class Trainer:
         @eqx.filter_jit
         def test_step(model, batch):
             ctx_data, tgt_data = batch
-            ys, _ = eqx.filter_vmap(eqx.filter_vmap(model.preprocess_channel_last))(tgt_data)  #ys shape: (B, T, H, W, C)
+            ys, _ = eqx.filter_vmap(eqx.filter_vmap(model.align_labels))(tgt_data)  #ys shape: (B, T, H, W, C)
 
             # keys = jax.random.split(key, ctx_data.shape[0])
             (mus, sigmas), ctx_vids = eqx.filter_vmap(model)(ctx_data)              ## mu, sigma shape: (B, T, H, W, C)

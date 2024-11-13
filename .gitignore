@@ -75,3 +75,4 @@ examples/celeba/runs/241022-193555-Good/checkpoints/*
 
 
 !examples/voxceleb/runs/241103-011757-LongWithNegLoss/
+!examples/voxceleb/runs/241112-182608-BestTransposed/
