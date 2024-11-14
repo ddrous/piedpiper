@@ -122,8 +122,8 @@ class ConvCNP(eqx.Module):
         X, Y = XY[..., :2], XY[..., 2:]
         img = jnp.zeros((C, H, W))
         mask = jnp.zeros((1, H, W))
-        i_locs = (X[:, 0] * H).astype(int)
-        j_locs = (X[:, 1] * W).astype(int)
+        i_locs = (X[:, 1] * H).astype(int)
+        j_locs = (X[:, 0] * W).astype(int)
         img = img.at[:, i_locs, j_locs].set(jnp.clip(Y, 0., 1.).T)
         mask = mask.at[:, i_locs, j_locs].set(1.)
         return img, mask

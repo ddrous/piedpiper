@@ -9,7 +9,7 @@ from functools import partial
 # jax.config.update("jax_debug_nans", True)
 
 ## For reproducibility
-seed = 2026
+seed = 2024
 
 ## Dataloader hps
 resolution = (64, 48)
@@ -19,16 +19,16 @@ c, h, w = (3, 5, 5)     ## The window size for the vector field and control sign
 
 data_folder="./data/"
 shuffle = True
-num_workers = 24
+num_workers = 32
 latent_chans = 32
 
 envs_batch_size = 41
 envs_batch_size_all = envs_batch_size
 num_batches = 82//41
 
-init_lr = 1e-3
-nb_epochs = 5000
-print_every = 10
+init_lr = 1e-4
+nb_epochs = 4500
+print_every = 100
 validate_every = 100
 sched_factor = 1.0
 eps = 1e-6  ## Small value to avoid division by zero
