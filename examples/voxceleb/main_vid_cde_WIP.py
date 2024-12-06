@@ -13,9 +13,9 @@ seed = 2024
 
 ## Dataloader hps
 resolution = (64, 48)
-k_shots = int(np.prod(resolution) * 0.1)
+k_shots = int(np.prod(resolution) * 0.05)
 T, H, W, C = (32, resolution[1], resolution[0], 3)
-c, h, w = (3, 5, 5)     ## The window size for the vector field and control signal to interact !
+c, h, w = (3, 3, 4)     ## The window size for the vector field and control signal to interact !
 
 data_folder="./data/"
 shuffle = True
@@ -26,8 +26,8 @@ envs_batch_size = 41
 envs_batch_size_all = envs_batch_size
 num_batches = 82//41
 
-init_lr = 3e-4
-nb_epochs = 5000
+init_lr = 1e-4
+nb_epochs = 1000
 print_every = 100
 validate_every = 100
 sched_factor = 1.0
@@ -253,28 +253,22 @@ class Model(eqx.Module):
     """ The model is a ConvCNP with an ODETerm. The takes inputs in raw formar: (H*W, 5) and returns in channel last format """
     ode_func: eqx.Module
     init_cond: eqx.Module
-    readout_mu: eqx.Module
-    readout_sigma: eqx.Module
+    readout: eqx.Module
 
     def __init__(self, C, H, W, c, h, w, latent_chans, key=None):
-        keys = jax.random.split(key, 4)
+        keys = jax.random.split(key, 3)
         self.init_cond = ConvCNP(C, H, W, latent_chans, epsilon=eps, key=keys[0])
         self.ode_func = ODEFunc(C, H, W, c, h, w, key=keys[1])
-        # self.readout = VNet(input_shape=(2*C, H, W), 
-        #                     output_shape=(2*C, H, W), 
-        #                     levels=4, 
-        #                     depth=8,
-        #                     kernel_size=5,
-        #                     activation=jax.nn.relu,
-        #                     final_activation=lambda x: x,
-        #                     batch_norm=False,
-        #                     dropout_rate=0.,
-        #                     key=keys[2],)
-
-        ## Make the readout be a simple 1x1 convolution
-        self.readout_mu = eqx.nn.Conv2d(2*C, C, 1, padding="same", key=keys[2])
-        self.readout_sigma = eqx.nn.Conv2d(2*C, C, 1, padding="same", key=keys[3])
-
+        self.readout = VNet(input_shape=(2*C, H, W), 
+                            output_shape=(2*C, H, W), 
+                            levels=4, 
+                            depth=8,
+                            kernel_size=5,
+                            activation=jax.nn.relu,
+                            final_activation=lambda x: x,
+                            batch_norm=False,
+                            dropout_rate=0.,
+                            key=keys[2],)
 
     def align_inputs(self, XY):
         """ Align the inputs for appropriate processing by the model """
@@ -329,13 +323,14 @@ class Model(eqx.Module):
             )
 
         ## Apply the readout network
-        pred_mus = eqx.filter_vmap(self.readout_mu)(sol.ys)    ## pred_vid shape: (T, C, H, W)
-        pred_sigmas = eqx.filter_vmap(self.readout_sigma)(sol.ys)    ## pred_vid shape: (T, C, H, W)
+        pred_mus, pred_sigmas = jnp.split(sol.ys, 2, axis=1)  ## pred_vid shape: (T, 2*C, H, W)
+        pred_mus = eqx.filter_vmap(self.readout_mean)(pred_mus)    ## pred_vid shape: (T, C, H, W)
+        pred_sigmas = eqx.filter_vmap(self.readout_sigma)(pred_sigmas)    ## pred_vid shape: (T, C, H, W)
 
         ## Width first and channel last
-        mus = pred_mus.transpose(0, 3, 2, 1)    ## pred_vid shape: (T, W, H, C)
-        sigmas = pred_sigmas.transpose(0, 3, 2, 1)    ## pred_vid shape: (T, W, H, C)
+        pred_vid = pred_mus.transpose(0, 3, 2, 1)    ## pred_vid shape: (T, W, H, C*2)
 
+        mus, sigmas = jnp.split(pred_vid, 2, axis=-1)    ## mus, sigmas shape: (T, W, H, C)
         sigmas = self.init_cond.positivity(sigmas)
 
         return (mus, sigmas), xs
@@ -357,9 +352,8 @@ learner = Learner(model, loss_fn, images=False)
 
 ## Define optimiser and train the model
 total_steps = nb_epochs*train_dataloader.num_batches
-# bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
-# sched = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
-sched = optax.exponential_decay(init_lr, transition_steps=100, decay_rate=0.99)
+bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
+sched = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
 opt = optax.chain(optax.clip(1e2), optax.adam(sched))
 
 trainer = Trainer(learner, opt)

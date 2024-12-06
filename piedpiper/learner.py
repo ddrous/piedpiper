@@ -151,6 +151,58 @@ class ConvCNP(eqx.Module):
 
 
 
+# class CustomConvCNP(eqx.Module):
+#     encoder: eqx.Module
+#     decoder: eqx.Module
+#     positivity: callable
+#     img_shape: tuple
+
+#     def __init__(self, C, H, W, in_chans, latent_chans, out_chans, epsilon=1e-6, key=None):
+#         super().__init__()
+#         ## From the ConvCNP paper, Figure 1c
+#         keys = jax.random.split(key, 3)
+#         self.img_shape = (C, H, W)
+
+#         self.encoder = Encoder(C, H, W, key=keys[0])    ## E
+#         self.decoder = Decoder(C, H, W, in_chans=C, latent_chans=latent_chans, key=keys[1])    ## rho
+#         self.positivity = lambda x: jnp.clip(jax.nn.softplus(x), epsilon, 1)
+
+#     def preprocess(self, XY):
+#         C, H, W = self.img_shape
+#         X, Y = XY[..., :2], XY[..., 2:]
+#         img = jnp.zeros((C, H, W))
+#         mask = jnp.zeros((1, H, W))
+#         i_locs = (X[:, 1] * H).astype(int)
+#         j_locs = (X[:, 0] * W).astype(int)
+#         img = img.at[:, i_locs, j_locs].set(jnp.clip(Y, 0., 1.).T)
+#         mask = mask.at[:, i_locs, j_locs].set(1.)
+#         return img, mask
+
+#     def preprocess_channel_last(self, XY):
+#         img, mask = self.preprocess(XY)
+#         return img.transpose(1, 2, 0), mask.transpose(1, 2, 0)
+
+#     def postprocess(self, mu, sigma):
+#         mu = jnp.transpose(mu, (1, 2, 0))
+#         sigma = jnp.transpose(sigma, (1, 2, 0))
+#         return mu, sigma
+
+#     def __call__(self, Inp):
+#         Ic, Mc = self.preprocess(Inp)   ## Context pixels and their location: shape (H*W, 2+C)
+#         hc = self.encoder(Ic, Mc)       ## Normalized convolution
+
+#         ft = self.decoder(hc)
+#         mu, sigma = jnp.split(ft, 2, axis=0)
+#         sigma = self.positivity(sigma)
+
+#         mu, sigma = self.postprocess(mu, sigma)  ## Reshape into 2D arrays = (H, W, C)
+
+#         return (mu, sigma)  ## Shape: (H, W, C)
+
+
+
+
+
 
 
 def neg_log_likelihood(mu, sigma, y):

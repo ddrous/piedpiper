@@ -12,19 +12,19 @@ from functools import partial
 seed = 2024
 
 ## Dataloader hps
-resolution = (64, 48)
+resolution = (12, 16)
 k_shots = int(np.prod(resolution) * 0.1)
-T, H, W, C = (32, resolution[1], resolution[0], 3)
+T, H, W, C = (20, resolution[1], resolution[0], 3)
 c, h, w = (3, 5, 5)     ## The window size for the vector field and control signal to interact !
 
 data_folder="./data/"
 shuffle = True
-num_workers = 24
+num_workers = 0
 latent_chans = 32
 
-envs_batch_size = 41
+envs_batch_size = 1
 envs_batch_size_all = envs_batch_size
-num_batches = 82//41
+num_batches = 1
 
 init_lr = 3e-4
 nb_epochs = 5000
@@ -33,8 +33,8 @@ validate_every = 100
 sched_factor = 1.0
 eps = 1e-6  ## Small value to avoid division by zero
 
-run_folder = None
-# run_folder = "./241108-213626-Test/"
+# run_folder = None
+# run_folder = "./runs/241108-213626-Test/"
 
 meta_train = True
 
@@ -63,6 +63,7 @@ train_dataset = VideoDataset(data_folder,
                       resolution=resolution, 
                       order_pixels=False, 
                       max_envs=envs_batch_size_all*num_batches,
+                      dataset="earth",
                       seed=seed)
 # print("Total number of environments in the training dataset:", len(train_dataset))
 train_dataloader = NumpyLoader(train_dataset, 
@@ -76,6 +77,24 @@ vt = VisualTester(None)
 vt.visualize_video_frames(tgt_videos[0], resolution)
 vt.visualize_video_frames(ctx_videos[0], resolution)
 
+
+
+#%%
+# print(data_folder+"id00000/earth.mp4")
+# vidcap = cv2.VideoCapture(data_folder+"id00000/earth.mp4")
+# success,image = vidcap.read()
+# images = []
+# while success:
+#     success, image = vidcap.read()
+#     images.append(image)
+# img_rgbs = []
+# for img in images[:-3]:
+#     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+#     img_rgbs.append(img_rgb)
+
+# print("Number of frames in the video:", len(images), images[0].shape)
+# # plt.imshow(images[22])
+# plt.imshow(img_rgbs[21])
 
 
 #%%
@@ -407,6 +426,7 @@ test_dataset = VideoDataset(data_folder,
                       resolution=resolution, 
                       order_pixels=False, 
                       max_envs=envs_batch_size_all*1,
+                      dataset="earth",
                       seed=10)
 test_dataloader = NumpyLoader(test_dataset, 
                                batch_size=envs_batch_size, 
