@@ -12,7 +12,7 @@ from functools import partial
 seed = 2024
 
 ## Dataloader hps
-resolution = (12, 16)
+resolution = (16, 16)
 k_shots = int(np.prod(resolution) * 0.1)
 T, H, W, C = (20, resolution[1], resolution[0], 3)
 c, h, w = (3, 5, 5)     ## The window size for the vector field and control signal to interact !
@@ -27,13 +27,13 @@ envs_batch_size_all = envs_batch_size
 num_batches = 1
 
 init_lr = 3e-4
-nb_epochs = 5000
+nb_epochs = 5000*4
 print_every = 100
 validate_every = 100
 sched_factor = 1.0
 eps = 1e-6  ## Small value to avoid division by zero
 
-# run_folder = None
+run_folder = None
 # run_folder = "./runs/241108-213626-Test/"
 
 meta_train = True
@@ -420,7 +420,7 @@ vt = VisualTester(trainer)
 vt.visualize_losses(run_folder+"losses.png", log_scale=False, ylim=1)
 
 test_dataset = VideoDataset(data_folder, 
-                      data_split="test", 
+                      data_split="train", 
                       num_shots=k_shots, 
                       num_frames=T, 
                       resolution=resolution, 
@@ -434,7 +434,7 @@ test_dataloader = NumpyLoader(test_dataset,
                                num_workers=num_workers)
 
 vt.visualize_videos(test_dataloader, 
-                    nb_envs=4, 
+                    nb_envs=1, 
                     save_path=run_folder+"sample_predictions_nobt.png", 
                     bootstrap=False, 
                     save_video=True, 
