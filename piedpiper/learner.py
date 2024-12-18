@@ -101,6 +101,34 @@ class Decoder(eqx.Module):
 
 
 
+class SimpleDecoder(eqx.Module):
+    vnet: eqx.Module
+    mlp: eqx.nn.Conv2d
+
+    def __init__(self, C, H, W, in_chans=3, latent_chans=8, out_chans=6, kernel_size=5, levels=4, depth=8, *, key):
+        super().__init__()
+        keys = jax.random.split(key, 4)
+
+        self.vnet = VNet(input_shape=(in_chans, H, W), 
+                         output_shape=(latent_chans, H, W), 
+                         levels=levels, 
+                         depth=depth,
+                         kernel_size=kernel_size,
+                         activation=jax.nn.relu,
+                         final_activation=lambda x:x,
+                         batch_norm=False,
+                         dropout_rate=0.,
+                         key=keys[0],)
+
+        self.mlp = eqx.nn.Conv2d(latent_chans, out_chans, 1, padding="same", key=keys[2])
+
+    def __call__(self, hc):
+        h = self.vnet(hc)
+        ft = self.mlp(h)
+        return ft
+
+
+
 class ConvCNP(eqx.Module):
     encoder: eqx.Module
     decoder: eqx.Module

@@ -83,3 +83,4 @@ examples/earth/data/*
 
 examples/earth/tmp/*
 examples/earth/runs/*
+!examples/earth/runs/241207-064528-Conclusive/
