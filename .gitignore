@@ -84,3 +84,5 @@ examples/earth/data/*
 examples/earth/tmp/*
 examples/earth/runs/*
 !examples/earth/runs/241207-064528-Conclusive/
+
+!examples/voxceleb/runs/241218-195244-StupidAttemptNeverRepeat/
