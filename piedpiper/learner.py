@@ -145,24 +145,44 @@ class ConvCNP(eqx.Module):
         self.decoder = Decoder(C, H, W, in_chans=C, latent_chans=latent_chans, key=keys[1])    ## rho
         self.positivity = lambda x: jnp.clip(jax.nn.softplus(x), epsilon, 1)
 
+    # def preprocess(self, XY):
+    #     C, H, W = self.img_shape
+    #     X, Y = XY[..., :2], XY[..., 2:]
+    #     img = jnp.zeros((C, H, W))
+    #     mask = jnp.zeros((1, H, W))
+    #     i_locs = (X[:, 1] * H).astype(int)  ## Because the XY dataset is in W,H format
+    #     j_locs = (X[:, 0] * W).astype(int)
+    #     img = img.at[:, i_locs, j_locs].set(jnp.clip(Y, 0., 1.).T)
+    #     mask = mask.at[:, i_locs, j_locs].set(1.)
+    #     return img, mask    ## Shapes: (C, H, W), (1, H, W)
+
     def preprocess(self, XY):
         C, H, W = self.img_shape
         X, Y = XY[..., :2], XY[..., 2:]
-        img = jnp.zeros((C, H, W))
-        mask = jnp.zeros((1, H, W))
-        i_locs = (X[:, 1] * H).astype(int)
-        j_locs = (X[:, 0] * W).astype(int)
-        img = img.at[:, i_locs, j_locs].set(jnp.clip(Y, 0., 1.).T)
-        mask = mask.at[:, i_locs, j_locs].set(1.)
-        return img, mask
+        img = jnp.zeros((W, H, C))
+        mask = jnp.zeros((W, H, 1))
+        i_locs = (X[:, 0] * W).astype(int)  ## Because the XY dataset is in W,H format
+        j_locs = (X[:, 1] * H).astype(int)
+        img = img.at[i_locs, j_locs, :].set(jnp.clip(Y, 0., 1.))
+        mask = mask.at[i_locs, j_locs, :].set(1.)
+    
+        img = einops.rearrange(img, 'w h c -> c h w')
+        mask = einops.rearrange(mask, 'w h c -> c h w')
+
+        return img, mask    ## Shapes: (C, H, W), (1, H, W)
 
     def preprocess_channel_last(self, XY):
         img, mask = self.preprocess(XY)
-        return img.transpose(1, 2, 0), mask.transpose(1, 2, 0)
+        # return img.transpose(1, 2, 0), mask.transpose(1, 2, 0)
+        img = einops.rearrange(img, 'c h w -> h w c')
+        mask = einops.rearrange(mask, 'c h w -> h w c')
+        return img, mask
 
     def postprocess(self, mu, sigma):
-        mu = jnp.transpose(mu, (1, 2, 0))
-        sigma = jnp.transpose(sigma, (1, 2, 0))
+        # mu = jnp.transpose(mu, (1, 2, 0))
+        # sigma = jnp.transpose(sigma, (1, 2, 0))
+        mu = einops.rearrange(mu, 'c h w -> w h c')
+        sigma = einops.rearrange(sigma, 'c h w -> w h c')
         return mu, sigma
 
     def __call__(self, Inp):

@@ -239,7 +239,7 @@ class Vox2Dataset(Dataset):
         return np.stack(video, axis=0)
 
     def sample_img_pixels(self, img) -> Tuple[np.ndarray, jnp.ndarray]:
-        ## img is a video frame with shape (H, W, C), but this method works in the classical (W, H, C) format
+        ## img is a CV2 video frame with shape (H, W, C), but this method works in the classical (W, H, C) format
         img = img.transpose(1, 0, 2)
 
         total_pixels = self.img_size[0] * self.img_size[1]
@@ -266,8 +266,8 @@ class Vox2Dataset(Dataset):
 
     def __getitem__(self, idx):
         # print(f"Loading video {self.files[idx]}")
-        img = self.get_video(self.files[idx])
-        coords_pixels = self.sample_video_pixels(img)
+        imgs = self.get_video(self.files[idx])
+        coords_pixels = self.sample_video_pixels(imgs)
         return coords_pixels
 
     def __len__(self):

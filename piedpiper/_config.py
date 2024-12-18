@@ -36,6 +36,7 @@ import optax
 # jax.config.update("jax_debug_nans", True)
 # jax.config.update("jax_platform_name", "cpu")
 # jax.config.update("jax_enable_x64", True)
+import einops
 
 print("Jax version:", jax.__version__)
 print("Available devices:", jax.devices())
