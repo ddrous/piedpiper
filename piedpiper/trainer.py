@@ -113,6 +113,8 @@ class Trainer:
             loss_epoch = 0.
             num_batches = 0
             for batch in dataloader:
+                # ## Move the batch to GPU
+                # batch = jax.tree.map(jax.device_put, batch)
                 model, loss, opt_state = train_step(model, batch, opt_state)
 
                 loss_epoch += loss

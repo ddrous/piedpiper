@@ -27,27 +27,26 @@ print(" Number of frames:", T)
 print(" Resolution:", resolution)
 print("===================================")
 
-data_folder="./data/"
 shuffle = False
-num_workers = 24
+num_workers = 8
 latent_chans = 32
 
 video_dataset = 'vox2'
-envs_batch_size = 41 if video_dataset=='vox2' else 1
+envs_batch_size = num_workers if video_dataset=='vox2' else 1
 envs_batch_size_all = envs_batch_size
-num_batches = 82//41 if video_dataset=='vox2' else 1
+num_batches = 82//envs_batch_size if video_dataset=='vox2' else 1
 
-init_lr = 3e-4
-nb_epochs = 10
+init_lr = 1e-4
+nb_epochs = 150
 print_every = 10
 validate_every = 10
 sched_factor = 1.0
 eps = 1e-6  ## Small value to avoid division by zero
 
-run_folder = None
-# run_folder = "./runs/241108-213626-Test/"
-
 meta_train = True
+data_folder="./data/" if meta_train else "../../data/"
+run_folder = None if meta_train else "./"
+# run_folder = "./runs/241108-213626-Test/" if meta_train else "./"
 
 
 #%%
@@ -58,7 +57,6 @@ else:
     print("Using existing run folder:", run_folder)
 
 _ = setup_run_folder(run_folder, os.path.basename(__file__))
-
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
@@ -91,10 +89,6 @@ vt.visualize_video_frames(ctx_videos[0], resolution)
 
 #%%
 
-## Batch-eval a model
-@eqx.filter_vmap(in_axes=(eqx.if_array(0), 0))
-def batch_eval(model, x):
-    return model(x)
 
 class Model(eqx.Module):
     """ The model is a sequence of ConvCNPs """
@@ -120,7 +114,7 @@ class Model(eqx.Module):
         self.level_chans = {0: C}
         for l in range(1, self.nb_levels+1):
             # self.level_chans[l] = C*(0+1)
-            self.level_chans[l] = 6
+            self.level_chans[l] = 2
 
         print("===== Some of the atributes of the model ===")
         print("Number of levels:", self.nb_levels)
@@ -257,6 +251,7 @@ model = Model(C, H, W, latent_chans=latent_chans, key=model_key)
 learner = Learner(model, loss_fn, images=False)
 
 print(f"Number of learnable parameters in the model: {count_params(model)/1000:3.1f} k")
+print("====================================================\n")
 
 ## Define optimiser and train the model
 sched = optax.exponential_decay(init_lr, transition_steps=100, decay_rate=0.99)

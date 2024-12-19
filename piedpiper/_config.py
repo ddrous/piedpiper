@@ -2,7 +2,7 @@ print("\n############# Pied Piper Video Compression #############\n")
 
 ## System-level configuration
 import os
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'true'
+# os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'true'
 # os.environ["EQX_ON_ERROR"] = 'breakpoint'
 
 ## Numpy configs

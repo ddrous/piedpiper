@@ -407,3 +407,55 @@ class EarthDataset(Dataset):
 
     def __len__(self):
         return self.total_envs
+
+
+
+from torch.utils import data
+
+
+## From JakeVDP: https://github.com/jax-ml/jax/discussions/18765
+def jax2torch(x):
+    return torch.utils.dlpack.from_dlpack(jax.dlpack.to_dlpack(x))
+def torch2jax(x):
+    return jax.dlpack.from_dlpack(torch.utils.dlpack.to_dlpack(x))
+
+
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# print("We found that the device is ", device)
+def numpy_collate(batch):
+    # return jax.tree.map(np.asarray, data.default_collate(batch))
+    new_b = jax.tree.map(np.asarray, data.default_collate(batch))
+    # print("The new batch resides in ", jnp.array(new_b[0]).devices())
+    return new_b
+
+    # func = lambda x: jax.dlpack.from_dlpack(torch.utils.dlpack.to_dlpack(x))
+    # # return jax.tree.map(func, data.default_collate(batch))
+    # new_batch = data.default_collate(batch)
+    # for i in range(len(new_batch)):
+    #     new_batch[i] = func(new_batch[i].to(device))
+    # return new_batch
+
+class NumpyLoader(data.DataLoader):
+  def __init__(self, dataset, batch_size=1,
+                shuffle=False, sampler=None,
+                batch_sampler=None, num_workers=0,
+                pin_memory=True, drop_last=False,
+                timeout=0, worker_init_fn=None):
+    super(self.__class__, self).__init__(dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        sampler=sampler,
+        batch_sampler=batch_sampler,
+        num_workers=num_workers,
+        collate_fn=numpy_collate,
+        pin_memory=pin_memory,
+        drop_last=drop_last,
+        timeout=timeout,
+        worker_init_fn=worker_init_fn)
+
+    self.num_batches = np.ceil(len(dataset) / batch_size).astype(int)
+
+# class FlattenAndCast(object):
+#   def __call__(self, pic):
+#     return jnp.ravel(jnp.array(pic, dtype=jnp.float32))
+
