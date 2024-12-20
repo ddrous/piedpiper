@@ -14,7 +14,7 @@ from piedpiper import *
 # jax.config.update("jax_debug_nans", True)
 
 ## For reproducibility
-seed = 2028
+seed = 2026
 
 ## Dataloader hps
 resolution = (32, 32)
@@ -27,7 +27,7 @@ print(" Number of frames:", T)
 print(" Resolution:", resolution)
 print("===================================")
 
-shuffle = False
+shuffle = True
 num_workers = 8
 latent_chans = 32
 
@@ -36,11 +36,10 @@ envs_batch_size = num_workers if video_dataset=='vox2' else 1
 envs_batch_size_all = envs_batch_size
 num_batches = 82//envs_batch_size if video_dataset=='vox2' else 1
 
-init_lr = 1e-4
-nb_epochs = 150
+init_lr = 3e-4
+nb_epochs = 1500*1
 print_every = 10
 validate_every = 10
-sched_factor = 1.0
 eps = 1e-6  ## Small value to avoid division by zero
 
 meta_train = True
