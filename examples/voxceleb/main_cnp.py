@@ -17,7 +17,7 @@ from piedpiper import *
 seed = 2026
 
 ## Dataloader hps
-resolution = (32, 32)
+resolution = (32, 24)
 k_shots = int(np.prod(resolution) * 0.1)
 T, H, W, C = (3**2, resolution[1], resolution[0], 3)
 
@@ -28,25 +28,24 @@ print(" Resolution:", resolution)
 print("===================================")
 
 shuffle = True
-num_workers = 8
-latent_size = 128*1
-hidden_mlp_size = 512//2
+num_workers = 24
+latent_size = 64*2
+hidden_mlp_size = 64
 
 video_dataset = 'vox2'
 envs_batch_size = num_workers if video_dataset=='vox2' else 1
 envs_batch_size_all = envs_batch_size
-num_batches = 82//envs_batch_size if video_dataset=='vox2' else 1
 
 init_lr = 3e-4
-nb_epochs = 5000*5
-print_every = 100
-validate_every = 100
+nb_epochs = 10
+print_every = 1
+validate_every = 1
 eps = 1e-6  ## Small value to avoid division by zero
 
 meta_train = True
 data_folder="./data/" if meta_train else "../../data/"
-run_folder = None if meta_train else "./"
-# run_folder = "./runs/241108-213626-Test/" if meta_train else "./"
+# run_folder = None if meta_train else "./"
+run_folder = "./runs/241108-213626-Test/" if meta_train else "./"
 
 
 #%%
@@ -65,15 +64,23 @@ data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
 ## List every dir in the data folder
 
-train_dataset = VideoDataset(data_folder, 
-                      data_split="train", 
+# train_dataset = VideoDataset(data_folder, 
+#                       data_split="train", 
+#                       num_shots=k_shots, 
+#                       num_frames=T, 
+#                       resolution=resolution, 
+#                       order_pixels=False, 
+#                       max_envs=-1,
+#                       dataset=video_dataset,
+#                       seed=seed)
+
+train_dataset = PreprocessedVideoDataset(
+                      data_path=data_folder+"preprocessed/", 
                       num_shots=k_shots, 
                       num_frames=T, 
                       resolution=resolution, 
-                      order_pixels=False, 
-                      max_envs=envs_batch_size_all*num_batches,
-                      dataset=video_dataset,
                       seed=seed)
+
 # print("Total number of environments in the training dataset:", len(train_dataset))
 train_dataloader = NumpyLoader(train_dataset, 
                                batch_size=envs_batch_size, 
@@ -86,10 +93,6 @@ vt = VisualTester(None)
 vt.visualize_video_frames(tgt_videos[0], resolution)
 vt.visualize_video_frames(ctx_videos[0], resolution)
 
-
-
-#%%
-Iterate throught he whole dataset and saave the taget sets for faster dataloading later
 
 #%%
 
@@ -126,7 +129,7 @@ class CNP(eqx.Module):
         """ Preprocess a single context frame into the appropriate format """
         C, H, W = self.img_shape
         X, Y = XY[..., :2], XY[..., 2:]
-        img = jnp.zeros((W, H, C))
+        img = jnp.zeros((W, H, Y.shape[1]))
         mask = jnp.zeros((W, H, 1))
         i_locs = (X[:, 0] * W).astype(int)  ## Because the XY dataset is in W,H format
         j_locs = (X[:, 1] * H).astype(int)
@@ -154,29 +157,60 @@ class CNP(eqx.Module):
 
     def __call__(self, ctx_data):
         ts = jnp.linspace(0, 1, T)
-        XY_ctx = eqx.filter_vmap(self.prepend_time)(ctx_data, ts)      ## XY_ctx shape: (T, H*W, 6)
+        txy_ctx = eqx.filter_vmap(self.prepend_time)(ctx_data, ts)      ## XY_ctx shape: (T, H*W, 6)
 
         ## Encode the context frames
-        zs = eqx.filter_vmap(eqx.filter_vmap(self.encoder))(XY_ctx)      ## zs shape: (T, H*W, latent_size)
+        zs = eqx.filter_vmap(eqx.filter_vmap(self.encoder))(txy_ctx)      ## zs shape: (T, H*W, latent_size)
 
         ## Aggretate the latent representations by taking the mean along the first two dimensions
         z = zs.mean(axis=(0, 1))                                         ## z shape: (latent_size,)
 
+        # ## Define the decoding function
+        # def decoding_fn(x, z):
+        #     xz = jnp.concatenate([z, x], axis=-1)
+        #     return self.decoder(xz)
+
         ## Define the decoding function
-        def decoding_fn(x, z):
-            xz = jnp.concatenate([z, x], axis=-1)
-            return self.decoder(xz)
+        def decoding_fn(t, xy, z):
+            txyz = jnp.concatenate([z, t, xy], axis=-1)
+            return self.decoder(txyz)
 
-        ## Create X_target (t, x, y) for each pixel in the target video
-        xs = jnp.linspace(0, 1, W)
-        ys = jnp.linspace(0, 1, H)
-        X_tgt = jnp.array(jnp.meshgrid(ts, xs, ys, indexing='ij')).transpose(1, 2, 3, 0).reshape(-1, 3)
+        ### Brute force strategy 1 ###
+        # ## Create X_target (t, x, y) for each pixel in the target video
+        # xs = jnp.linspace(0, 1, W)
+        # ys = jnp.linspace(0, 1, H)
+        # # txy_tgt = jnp.array(jnp.meshgrid(ts, xs, ys, indexing='ij')).transpose(1, 2, 3, 0).reshape(-1, 3)
+        # txy_tgt = einops.rearrange(jnp.array(jnp.meshgrid(ts, xs, ys, indexing='ij')), 'c t w h -> (t w h) c')
+        # out = eqx.filter_vmap(decoding_fn, in_axes=(0, None))(txy_tgt, z)                   ## out shape: (T*H*W, 6)
+        # tgt_vid = einops.rearrange(out, '(t w h) c -> t w h c', t=T, h=H, w=W, c=3*2)
+        # mus, sigmas = tgt_vid[..., :3], tgt_vid[..., 3:]
+        # sigmas = self.positivity(sigmas)
+        #===========================
 
-        ## Decode the target video, then put in in proper shape
-        out = eqx.filter_vmap(decoding_fn, in_axes=(0, None))(X_tgt, z)                   ## out shape: (T*H*W, 6)
-        tgt_vid = einops.rearrange(out, '(t w h) c -> t w h c', t=T, h=H, w=W, c=3*2)
-        mus, sigmas = tgt_vid[..., :3], tgt_vid[..., 3:]
+        ### Brute force strategy 2 ###
+        # txy_tgt = einops.rearrange(jnp.array(jnp.meshgrid(ts, xs, ys, indexing='ij')), 'c t w h -> t (w h) c')                  ## Shape: (T, H*W, 3)
+        # out = eqx.filter_vmap(eqx.filter_vmap(decoding_fn, in_axes=(0, None)), in_axes=(0, None))(txy_tgt, z)                   ## out shape: (T, H*W, 6)
+        # XY_tRGB = jnp.concatenate([txy_tgt[:, :, jnp.array([1,2,0])], out], axis=-1)      ## XY_tRGB shape: (T, H*W, 9), with time at the third position 
+        # tgt_vid, _ = eqx.filter_vmap(self.align_labels)(XY_tRGB)      ## tgt_vid shape: (T, W, H, 1+3*2)
+        # mus, sigmas = tgt_vid[..., 1:4], tgt_vid[..., 4:]
+        # sigmas = self.positivity(sigmas)
+        #===========================
+
+        ### Strategy 3 ###
+        xs, ys = jnp.unravel_index(jnp.arange(H*W), (W, H))
+        xys = jnp.vstack((xs, ys)).T / jnp.array((W, H))        ## Shape: (H*W, 2)
+        out = eqx.filter_vmap(eqx.filter_vmap(decoding_fn, in_axes=(None, 0, None)), in_axes=(0, None, None))(ts[:, None], xys, z)                   ## out shape: (T, H*W, 6)
+        mus, sigmas = out[..., :3], out[..., 3:]
+
+        # xys_long = jnp.tile(xys[None, ...], (T, 1, 1))      ## Shape: (T, H*W, 2)
+        # mus = eqx.filter_vmap(self.align_labels)(jnp.concatenate([xys_long, mus], axis=-1))
+        # sigmas = eqx.filter_vmap(self.align_labels)(jnp.concatenate([xys_long, sigmas], axis=-1))
+
+        mus = einops.rearrange(mus, 't (w h) c -> t w h c', h=H)
+        sigmas = einops.rearrange(sigmas, 't (w h) c -> t w h c', h=H)
+
         sigmas = self.positivity(sigmas)
+        #===========================
 
         ctx_vid = eqx.filter_vmap(self.align_labels)(ctx_data)
 
@@ -201,7 +235,7 @@ print(f"Number of learnable parameters in the model: {count_params(model)/1000:3
 print("====================================================\n")
 
 ## Define optimiser and train the model
-sched = optax.exponential_decay(init_lr, transition_steps=100, decay_rate=0.99)
+sched = optax.exponential_decay(init_lr, transition_steps=10, decay_rate=0.90)
 # opt = optax.chain(optax.clip(1e2), optax.adam(sched))
 opt = optax.adam(sched)
 

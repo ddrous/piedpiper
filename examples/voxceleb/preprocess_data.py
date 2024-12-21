@@ -16,7 +16,7 @@ from piedpiper import *
 seed = 2026
 
 ## Dataloader hps
-resolution = (32, 32)
+resolution = (32, 24)
 proportion_of_shots = 0.1
 k_shots = int(np.prod(resolution) * proportion_of_shots)
 T, H, W, C = (3**2, resolution[1], resolution[0], 3)
