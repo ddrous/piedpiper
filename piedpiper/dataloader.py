@@ -141,6 +141,57 @@ class VideoDataset(Dataset):
 
 
 
+class PreprocessedVideoDataset(Dataset):
+    def __init__(self, 
+                 data_path="./data/proprocessed", 
+                 num_shots=100,
+                 num_frames=10,
+                 resolution=(32, 32),
+                 seed=None,
+                 ):
+        """
+        Simply load a preprocessed video dataset for both context and target dataloaders.
+        """
+
+        ## Load from a folder created this way
+        try:
+            self.target_sets = np.load(data_path+f"/vox2_targets_{num_frames}_{resolution[1]}_{resolution[0]}_3_{num_shots}.npz")['data']
+        except:
+            raise ValueError(f"No preprocessed data found at the provided path {data_path}")
+
+        self.num_shots = num_shots
+        self.total_envs = self.target_sets.shape[0]
+
+        ## set the numpy seed for reproducibility
+        if seed is not None:
+            np.random.seed(seed)
+
+
+    def __getitem__(self, idx):
+        tgt_vid = self.target_sets[idx]
+
+        ## Randomly sample k_shot pixels per frame from the tgt vid shape (T, H*W, C)
+        total_pixels = tgt_vid.shape[1]
+
+        flattened_indices = np.random.choice(total_pixels, size=self.num_shots, replace=False)
+        ctx_vid = tgt_vid[:, flattened_indices, :]
+
+        # ## For every frame, sample k_shot pixels. Do this for all frames, in a for loop. NOTE: not needed, the target frames are already sampled randoly on a per-frame basis
+        # ctx_vid = []
+        # for i in range(tgt_vid.shape[0]):
+        #     flattened_indices = np.random.choice(total_pixels, size=self.num_shots, replace=False)
+        #     ctx_vid.append(tgt_vid[i, flattened_indices, :])
+        # ctx_vid = np.stack(ctx_vid, axis=0)
+
+        return ctx_vid, tgt_vid
+
+    def __len__(self):
+        return self.total_envs
+
+
+
+
+
 class Vox2Dataset(Dataset):
     """
     A celeb a dataloader for meta-learning.
