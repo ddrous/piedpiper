@@ -16,7 +16,8 @@ from piedpiper import *
 seed = 2026
 
 ## Dataloader hps
-resolution = (32, 24)
+# resolution = (32, 24)
+resolution = (128, 128)
 proportion_of_shots = 0.1
 k_shots = int(np.prod(resolution) * proportion_of_shots)
 T, H, W, C = (3**2, resolution[1], resolution[0], 3)
@@ -73,8 +74,8 @@ for i, (_, tgt_videos) in enumerate(train_dataloader):
     all_targets.append(tgt_videos)
 
     # print("Loaded target videos shape:", tgt_videos.shape)
-    # if i >1:
-    #     break
+    if i >100-1:
+        break
 
 all_targets = np.concatenate(all_targets, axis=0)
 

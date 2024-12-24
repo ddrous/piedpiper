@@ -159,10 +159,10 @@ class Trainer:
         def test_step(model, batch):
             ctx_data, tgt_data = batch
             ys, _ = eqx.filter_vmap(model.preprocess_channel_last)(tgt_data)
-            # mus, sigmas = model(ctx_data)
+            mus, sigmas = model(ctx_data)
 
-            ### Fix this please after
-            mus, sigmas = model(ctx_data, tgt_data[...,:2])
+            # ### Fix this please after
+            # mus, sigmas = model(ctx_data, tgt_data[...,:2])
 
             if criterion == "NLL":
                 losses = neg_log_likelihood(mus, sigmas, ys)
