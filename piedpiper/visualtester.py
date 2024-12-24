@@ -96,27 +96,27 @@ class VisualTester:
             else:
                 ax1, ax2, ax3, ax4, ax5 = axs
 
-            img_true = make_image(Xt[e_], Yt[e_], img_size=img_shape).transpose(1, 0, 2)
+            img_true = make_image(Xt[e_], Yt[e_], img_size=img_shape).transpose(0, 1, 2)
             ax1.imshow(img_true)
             if e==0:
                 ax1.set_title(f"Target", fontsize=22)
 
-            img_fw = make_image(Xc[e_], Yc[e_], img_size=img_shape).transpose(1, 0, 2)
+            img_fw = make_image(Xc[e_], Yc[e_], img_size=img_shape).transpose(0, 1, 2)
             ax2.imshow(img_fw)
             if e==0:
                 ax2.set_title(f"Context Set", fontsize=22)
 
-            img_pred = mus[e_].transpose(1, 0, 2)
+            img_pred = mus[e_].transpose(0, 1, 2)
             ax3.imshow(img_pred)
             if e==0:
                 ax3.set_title(f"Prediction", fontsize=22)
 
-            img_std = sigmas[e_].transpose(1, 0, 2)
+            img_std = sigmas[e_].transpose(0, 1, 2)
             ax4.imshow(img_std)
             if e==0:
                 ax4.set_title(f"Uncertainty", fontsize=22)
 
-            interpolation = interpolate_2D_image(np.asarray(Xc[e_]), np.asarray(Yc[e_]), img_shape, method=interp_method).transpose(1, 0, 2)
+            interpolation = interpolate_2D_image(np.asarray(Xc[e_]), np.asarray(Yc[e_]), img_shape, method=interp_method).transpose(0, 1, 2)
             ax5.imshow(interpolation)
             if e==0:
                 ax5.set_title(f"{interp_method.capitalize()} Int.", fontsize=22)
