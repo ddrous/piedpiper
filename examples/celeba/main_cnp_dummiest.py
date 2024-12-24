@@ -1,6 +1,7 @@
 #%%[markdown]
 
-# ## Simplest form of regression on an image
+# ## Simplest form of regression on images
+# WHat I realise is that more data doesn't mean more flexibility. It's the oppositite. It takes ages, and gets stuck in a wird minima all only means.
 
 #%%
 import jax
@@ -13,10 +14,7 @@ print("Available devices:", jax.devices())
 import jax.numpy as jnp
 
 import numpy as np
-from scipy.integrate import solve_ivp
-
 import equinox as eqx
-import diffrax
 
 # import matplotlib.pyplot as plt
 # from selfmod import NumpyLoader, make_image, make_run_folder, setup_run_folder, count_params
@@ -26,7 +24,6 @@ from neuralhub import *
 
 import optax
 import time
-import h5py
 import torch
 
 #%%
@@ -38,7 +35,7 @@ np.random.seed(SEED)
 torch.manual_seed(SEED)
 
 ## Training hps
-nb_epochs = 15000
+nb_epochs = 15000*10
 print_every = nb_epochs//20
 batch_size = 16
 
@@ -66,8 +63,8 @@ _ = setup_run_folder(run_folder, os.path.basename(__file__))
 
 #%%
 
-train_data = np.load(data_folder+"example_data.npz")['context'][0:batch_size]
-train_data_tgt = np.load(data_folder+"example_data.npz")['target'][0:batch_size]
+train_data = np.load(data_folder+"example_data.npz")['context'][0:16]
+train_data_tgt = np.load(data_folder+"example_data.npz")['target'][0:16]
 
 print("Train data shape:", train_data.shape)
 
@@ -76,10 +73,20 @@ class DataSet(torch.utils.data.Dataset):
     def __init__(self, context, target):
         self.context = context
         self.target = target
+
+        self.total_len = len(self.context)
     def __len__(self):
         return len(self.context)
+        # return 16
+
     def __getitem__(self, idx):
         return self.context[idx], self.target[idx]
+
+        # ## get a number between 0 and len(context), based on idx
+        # img_idx = np.random.randint(0, len(self.context))
+        # return self.context[img_idx], self.target[img_idx]
+
+
 
 train_set = DataSet(train_data, train_data_tgt)
 train_loader = NumpyLoader(train_set, batch_size=batch_size, shuffle=True)
@@ -245,6 +252,7 @@ W, H = 32, 24
 # xs, ys = jnp.unravel_index(jnp.arange(H*W), (W, H))
 # X_grid = jnp.vstack((xs, ys)).T / jnp.array((W, H))
 
+train_data, train_data_tgt = next(iter(train_loader))
 plt_id = np.random.randint(0, len(train_data))
 
 ## Turn the model prediction into an image and visualise it
