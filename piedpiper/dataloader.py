@@ -155,7 +155,8 @@ class PreprocessedVideoDataset(Dataset):
 
         ## Load from a folder created this way
         try:
-            self.target_sets = np.load(data_path+f"/vox2_targets_{num_frames}_{resolution[1]}_{resolution[0]}_3_{num_shots}.npz")['data']
+            # self.target_sets = np.load(data_path+f"/vox2_targets_{num_frames}_{resolution[1]}_{resolution[0]}_3_{num_shots}.npz")['data']
+            self.target_sets = np.load(data_path+f"/vox2_targets_{num_frames}_{resolution[1]}_{resolution[0]}_3.npz")['data']
         except:
             raise ValueError(f"No preprocessed data found at the provided path {data_path}")
 

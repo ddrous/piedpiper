@@ -24,8 +24,8 @@ H, W, C = (*resolution, 3)
 T = 9
 
 # data_folder="../../../Self-Mod/examples/celeb-a/data/"
-data_folder="./data/"
-shuffle = True
+data_folder="../../data/"
+shuffle = False
 num_workers = 24
 latent_chans = 32
 
@@ -45,9 +45,9 @@ print_every = 1
 validate_every = 1
 eps = 1e-6  ## Small value to avoid division by zero
 
-meta_train = True
-# run_folder = "./"
-run_folder = None
+meta_train = False
+run_folder = "./"
+# run_folder = None
 
 
 #%%
@@ -57,7 +57,8 @@ if run_folder==None:
 else:
     print("Using existing run folder:", run_folder)
 
-_ = setup_run_folder(run_folder, os.path.basename(__file__))
+if meta_train == False:
+    _ = setup_run_folder(run_folder, os.path.basename(__file__))
 
 # os.listdir(data_folder)
 
@@ -200,8 +201,9 @@ else:
 #%%
 
 vt = VisualTester(trainer)
-vt.visualize_losses(run_folder+"losses.png", log_scale=False, ylim=1.1, y_lim_val=1.1)
+vt.visualize_losses(run_folder+"losses.png", log_scale=False, ylim=1.1, ylim_val=0.1)
 
+#%%
 test_dataset = VideoDataset(data_folder, 
                       data_split="train", 
                       num_shots=k_shots, 

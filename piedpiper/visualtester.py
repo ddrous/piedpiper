@@ -6,7 +6,7 @@ class VisualTester:
     def __init__(self, trainer):
         self.trainer = trainer
 
-    def visualize_losses(self, save_path, log_scale=False, ylim=None):
+    def visualize_losses(self, save_path, log_scale=False, ylim=None, ylim_val=None):
         losses = self.trainer.train_losses
         if isinstance(losses, list):
             losses = jnp.stack(losses)
@@ -26,6 +26,9 @@ class VisualTester:
         val_losses = self.trainer.val_losses
         if len(val_losses) > 0:
             ax2 = ax.twinx()
+
+            if ylim_val is not None:
+                val_losses = np.clip(val_losses, None, ylim_val)
 
             len_train = len(losses)
             len_val = len(val_losses)
