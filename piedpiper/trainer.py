@@ -82,7 +82,9 @@ class Trainer:
                     validate_every=100,
                     save_path=False, 
                     val_dataloader=None, 
-                    val_criterion=None):
+                    val_criterion=None,
+                    key=None
+                    ):
         """ Train the model using the provided dataloader """
 
         opt = self.opt
@@ -96,8 +98,8 @@ class Trainer:
             os.makedirs(save_path+"checkpoints", exist_ok=True)
 
         @eqx.filter_jit
-        def train_step(model, batch, opt_state):
-            loss, grads = eqx.filter_value_and_grad(loss_fn)(model, batch)
+        def train_step(model, batch, opt_state, key):
+            loss, grads = eqx.filter_value_and_grad(loss_fn)(model, batch, key)
             updates, opt_state = opt.update(grads, opt_state, eqx.filter(model, eqx.is_array))
             model = eqx.apply_updates(model, updates)
             return model, loss, opt_state
@@ -106,6 +108,7 @@ class Trainer:
 
         start_time = time.time_ns()
 
+        trainer_key = key
         ## TODO: use tqdm for better progress bar
         for epoch in range(nb_epochs):
             start_time_step = time.perf_counter()
@@ -115,7 +118,8 @@ class Trainer:
             for batch in dataloader:
                 # ## Move the batch to GPU
                 # batch = jax.tree.map(jax.device_put, batch)
-                model, loss, opt_state = train_step(model, batch, opt_state)
+                trainer_key, _ = jax.random.split(trainer_key)
+                model, loss, opt_state = train_step(model, batch, opt_state, trainer_key)
 
                 loss_epoch += loss
                 num_batches += 1

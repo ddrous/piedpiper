@@ -91,3 +91,6 @@ examples/earth/runs/*
 examples/voxceleb/runs/241224-164721-ConvCNPImgs/checkpoints
 !examples/voxceleb/runs/241225-095733-FirstSuccessfulVideo/
 examples/voxceleb/runs/241225-095733-FirstSuccessfulVideo/checkpoints
+
+!examples/voxceleb/runs/241226-024907-IndConvCNP-Amazing/
+examples/voxceleb/runs/241226-024907-IndConvCNP-Amazing/checkpoints

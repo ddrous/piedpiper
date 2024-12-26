@@ -44,7 +44,7 @@ print_every = 10
 validate_every = 40
 eps = 1e-6  ## Small value to avoid division by zero
 
-meta_train = True
+meta_train = False
 # run_folder = "./"
 run_folder = None if meta_train else "./"
 # data_folder="../../../Self-Mod/examples/celeb-a/data/"
@@ -206,6 +206,7 @@ else:
 vt = VisualTester(trainer)
 vt.visualize_losses(run_folder+"losses.png", log_scale=False, ylim=1.1, ylim_val=1.1)
 
+#%%
 test_dataset = VideoDataset(data_folder, 
                       data_split="train", 
                       num_shots=k_shots, 
